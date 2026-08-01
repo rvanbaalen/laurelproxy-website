@@ -22,7 +22,7 @@ const base = import.meta.env.BASE_URL;
       <li><strong>SQLite with WAL mode</strong> -- high write throughput with concurrent reads. WAL (Write-Ahead Logging) allows the proxy to write captured requests while the API serves queries simultaneously without locking.</li>
       <li><strong>Batched writes</strong> -- requests are queued in memory and flushed every 100ms to reduce I/O. This avoids a disk write per request during heavy traffic.</li>
       <li><strong>Event batching</strong> -- SSE events are buffered for 100ms before flushing to connected clients. This prevents overwhelming the web UI during bursts of traffic.</li>
-      <li><strong>Response decompression</strong> -- gzip, deflate, and brotli responses are automatically decompressed before storage, so bodies are always readable.</li>
+      <li><strong>Uncompressed capture</strong> -- the proxy strips <code>Accept-Encoding</code> from outbound requests, so upstream servers return plaintext and stored bodies are always readable without a decompression step.</li>
       <li><strong>Body truncation</strong> -- configurable max body size prevents storage bloat. A <code>truncated</code> flag is set on affected records so you know when data was clipped.</li>
       <li><strong>Per-domain cert caching</strong> -- an LRU cache avoids regenerating SSL certificates for frequently accessed domains. Default capacity is 500 entries.</li>
     </ul>

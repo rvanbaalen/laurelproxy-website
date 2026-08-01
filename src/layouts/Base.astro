@@ -5,9 +5,18 @@ import SearchModal from "../components/SearchModal.astro";
 interface Props {
   title?: string;
   description?: string;
+  /** Set on pages that should stay out of the index (none today). */
+  noindex?: boolean;
+  /** Optional schema.org object, serialised into a JSON-LD script tag. */
+  structuredData?: Record<string, unknown>;
 }
 
-const { title = "Laurel Proxy", description = "The HTTP proxy your AI agent can use" } = Astro.props;
+const {
+  title = "Laurel Proxy",
+  description = "The HTTP proxy your AI agent can use",
+  noindex = false,
+  structuredData,
+} = Astro.props;
 const base = import.meta.env.BASE_URL;
 const siteUrl = "https://laurelproxy.robinvanbaalen.nl/";
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
@@ -19,7 +28,7 @@ const ogImageUrl = `${siteUrl}og.png`;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
     <meta property="og:title" content={title} />
@@ -27,12 +36,20 @@ const ogImageUrl = `${siteUrl}og.png`;
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content="Laurel Proxy" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="720" />
+    <meta property="og:image:alt" content="Laurel Proxy — HTTP/HTTPS intercepting proxy for developers" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    {structuredData && (
+      <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    )}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />

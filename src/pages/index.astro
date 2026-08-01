@@ -91,7 +91,24 @@ const capabilities = [
 
 <Base
   title="Laurel Proxy — See every HTTP request. Debug anything."
-  description="Free, open source HTTP/HTTPS intercepting proxy. Capture, inspect, and replay traffic. Debug web APIs, reverse-engineer mobile apps, or let your AI agent query everything."
+  description="Free, open source HTTP/HTTPS intercepting proxy for macOS and Linux. Capture, inspect, and replay traffic from your terminal, browser, or AI agent."
+  structuredData={{
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Laurel Proxy",
+    applicationCategory: "DeveloperApplication",
+    // Windows is not supported; system-proxy control is macOS-only.
+    operatingSystem: "macOS, Linux",
+    description:
+      "Open source HTTP/HTTPS intercepting proxy. Captures requests to a local SQLite database and exposes them through a CLI, a web dashboard, and a REST API.",
+    url: "https://laurelproxy.robinvanbaalen.nl/",
+    codeRepository: "https://github.com/rvanbaalen/laurelproxy",
+    downloadUrl: "https://www.npmjs.com/package/laurel-proxy",
+    license: "https://opensource.org/licenses/MIT",
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    author: { "@type": "Person", name: "Robin van Baalen" },
+  }}
 >
   <Nav />
 

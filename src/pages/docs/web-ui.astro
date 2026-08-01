@@ -323,7 +323,7 @@ open http://127.0.0.1:9001</code></pre>
 </style>
 
 <div id="lightbox">
-  <img id="lightbox-img" />
+  <img id="lightbox-img" alt="" />
 </div>
 
 <style is:global>
@@ -366,7 +366,11 @@ open http://127.0.0.1:9001</code></pre>
 
   document.querySelectorAll('.prose-custom .screenshot').forEach(img => {
     img.addEventListener('click', () => {
-      lightboxImg.src = (img as HTMLImageElement).src;
+      const source = img as HTMLImageElement;
+      lightboxImg.src = source.src;
+      // Carry the thumbnail's alt across, otherwise the zoomed view reaches
+      // assistive tech with no accessible name at all.
+      lightboxImg.alt = source.alt;
       lightbox.classList.add('open');
     });
   });

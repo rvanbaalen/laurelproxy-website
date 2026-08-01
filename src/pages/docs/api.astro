@@ -29,7 +29,7 @@ const statusResponse = `{
 }`;
 ---
 
-<DocsLayout title="REST API Reference" description="Laurel Proxy REST API reference. Query captured HTTP traffic, replay requests, manage the proxy, and stream real-time events via SSE. Programmatic access for AI agents and automation." headings={[
+<DocsLayout title="REST API Reference" description="Laurel Proxy REST API reference. Query captured HTTP traffic, replay requests, control the proxy, and stream live events over SSE." headings={[
   { id: "get-api-requests", text: "GET /api/requests", depth: 2 },
   { id: "get-api-requests-id", text: "GET /api/requests/:id", depth: 2 },
   { id: "delete-api-requests", text: "DELETE /api/requests", depth: 2 },
@@ -37,6 +37,9 @@ const statusResponse = `{
   { id: "get-api-ca-crt", text: "GET /api/ca.crt", depth: 2 },
   { id: "post-api-proxy-start", text: "POST /api/proxy/start", depth: 2 },
   { id: "post-api-proxy-stop", text: "POST /api/proxy/stop", depth: 2 },
+  { id: "get-api-system-proxy", text: "GET /api/system-proxy", depth: 2 },
+  { id: "post-api-system-proxy-enable", text: "POST /api/system-proxy/enable", depth: 2 },
+  { id: "post-api-system-proxy-disable", text: "POST /api/system-proxy/disable", depth: 2 },
   { id: "post-api-replay", text: "POST /api/replay", depth: 2 },
   { id: "get-api-events", text: "GET /api/events", depth: 2 },
   { id: "post-api-shutdown", text: "POST /api/shutdown", depth: 2 },
@@ -108,6 +111,27 @@ curl "http://127.0.0.1:8081/api/requests?host=example.com&status=200&limit=50"</
     <h2 id="post-api-proxy-stop">POST /api/proxy/stop</h2>
     <p>Stop the proxy server. The API remains available after stopping the proxy.</p>
     <pre><code>curl -X POST http://127.0.0.1:8081/api/proxy/stop</code></pre>
+
+    <h2 id="get-api-system-proxy">GET /api/system-proxy</h2>
+    <p>
+      Report whether the macOS system proxy is currently pointed at Laurel Proxy.
+      Returns a JSON object with a single boolean <code>enabled</code> field.
+    </p>
+    <pre><code>curl http://127.0.0.1:8081/api/system-proxy</code></pre>
+
+    <h2 id="post-api-system-proxy-enable">POST /api/system-proxy/enable</h2>
+    <p>
+      Route all macOS HTTP and HTTPS traffic through Laurel Proxy. This is the
+      programmatic equivalent of <code>laurel-proxy proxy-on</code>. macOS only.
+    </p>
+    <pre><code>curl -X POST http://127.0.0.1:8081/api/system-proxy/enable</code></pre>
+
+    <h2 id="post-api-system-proxy-disable">POST /api/system-proxy/disable</h2>
+    <p>
+      Restore the previous system proxy settings, equivalent to
+      <code>laurel-proxy proxy-off</code>. macOS only.
+    </p>
+    <pre><code>curl -X POST http://127.0.0.1:8081/api/system-proxy/disable</code></pre>
 
     <h2 id="post-api-replay">POST /api/replay</h2>
     <p>Replay a previously captured request.</p>

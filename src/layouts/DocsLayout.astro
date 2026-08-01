@@ -16,9 +16,40 @@ const { title, description = "", headings = [] } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const currentPath = Astro.url.pathname;
 const { prev, next } = getPrevNext(currentPath);
+
+// BreadcrumbList lets search results show "Docs > Recipes > ..." instead of a
+// bare URL. Built from the path so nested recipes nest correctly.
+const siteUrl = "https://laurelproxy.robinvanbaalen.nl";
+const segments = currentPath.split("/").filter(Boolean);
+const crumbs = [
+  { name: "Home", item: `${siteUrl}/` },
+  ...segments.map((segment, index) => ({
+    // Last segment is the current page, so use its real title rather than the slug.
+    name:
+      index === segments.length - 1
+        ? title
+        : segment.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+    item: `${siteUrl}/${segments.slice(0, index + 1).join("/")}/`,
+  })),
+];
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: crumbs.map((crumb, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: crumb.name,
+    item: crumb.item,
+  })),
+};
 ---
 
-<Base title={`${title} — Laurel Proxy`} description={description}>
+<Base
+  title={`${title} — Laurel Proxy`}
+  description={description}
+  structuredData={breadcrumbSchema}
+>
   <Nav />
 
   <div class="flex min-h-screen">
