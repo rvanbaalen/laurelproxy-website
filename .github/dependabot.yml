@@ -1,0 +1,67 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Amsterdam
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore"
+      include: scope
+    # Patch and minor bumps are batched so routine churn is one reviewable PR.
+    # Majors stay ungrouped: Astro 6 -> 7 and @astrojs/cloudflare 13 -> 14 are
+    # the kind of change that needs to be looked at on its own.
+    groups:
+      astro:
+        patterns:
+          - astro
+          - "@astrojs/*"
+          - astro-*
+        update-types:
+          - minor
+          - patch
+      react:
+        patterns:
+          - react
+          - react-dom
+          - "@types/react*"
+        update-types:
+          - minor
+          - patch
+      tailwind:
+        patterns:
+          - tailwindcss
+          - "@tailwindcss/*"
+        update-types:
+          - minor
+          - patch
+      dev-tooling:
+        patterns:
+          - vitest
+          - jsdom
+          - wrangler
+          - "@testing-library/*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Amsterdam
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
