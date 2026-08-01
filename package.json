@@ -16,7 +16,6 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.6",
     "astro-pagefind": "^2.0.1",
-    "astro-posthog": "^1.0.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3"
