@@ -44,8 +44,12 @@ describe("TerminalReplay", () => {
 
   it("renders empty terminal with empty lines array", () => {
     const { container } = render(<TerminalReplay lines={[]} />);
-    expect(container.querySelector(".font-mono")).toBeTruthy();
-    expect(container.textContent).toContain("$");
+    // The frame still renders. Note `.font-mono` alone also matches the header
+    // "Terminal" label, so scope to the content div that holds the replay lines.
+    const content = container.querySelector("div.font-mono");
+    expect(content).toBeTruthy();
+    // ...but runAnimation bails early on an empty array, so no lines are appended.
+    expect(content?.childNodes.length).toBe(0);
   });
 
   it("types prompt lines character by character", async () => {
