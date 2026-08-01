@@ -1,0 +1,129 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<DocsLayout title="Find Your Slowest API Endpoints" description="Find your slowest API endpoints by filtering captured traffic by response duration with Laurel Proxy's --slow flag." headings={[
+  { id: "scenario", text: "Scenario", depth: 2 },
+  { id: "steps", text: "Steps", depth: 2 },
+  { id: "with-your-ai-agent", text: "With Your AI Agent", depth: 2 },
+  { id: "related", text: "Related", depth: 2 },
+]}>
+  <div class="prose-custom">
+    <h2 id="scenario">Scenario</h2>
+    <p>
+      Your app feels sluggish, but you don't know which API call is responsible. Browser devtools shows individual
+      request timings, but there is no easy way to see which endpoints are consistently slow across a whole session
+      of normal usage.
+    </p>
+
+    <h2 id="steps">Steps</h2>
+
+    <p>Start the proxy and use your app normally for a while so real traffic gets captured:</p>
+    <pre><code>laurel-proxy start</code></pre>
+
+    <p>Query for requests slower than a threshold, in milliseconds:</p>
+    <pre><code>laurel-proxy requests --slow 500 --format table</code></pre>
+    <p>
+      The <code>--slow &lt;ms&gt;</code> flag filters to requests whose duration exceeds the threshold. Duration
+      is stored and indexed for every captured request, so this works instantly even across thousands of requests.
+    </p>
+
+    <p>Example output:</p>
+    <pre><code>  METHOD  STATUS  HOST                          PATH                          TIME      SIZE
+  ──────────────────────────────────────────────────────────────────────────────────────────────
+  GET     200     api.example.com               /v1/reports/summary          1284ms    42.1KB
+  POST    200     api.example.com               /v1/search                   891ms     8.3KB
+  GET     200     api.example.com                /v1/users/12345/orders      612ms     15.7KB
+
+  3 total (showing 3, offset 0)</code></pre>
+
+    <p>Narrow it down further to find patterns, such as a single host or a specific method:</p>
+    <pre><code># Slow requests to a specific service
+laurel-proxy requests --slow 500 --host api.example.com --format table
+
+# Slow requests in JSON, for scripting or further analysis
+laurel-proxy requests --slow 1000 --format json</code></pre>
+
+    <p>Sort by eye across the table &mdash; the endpoints appearing most often are the ones worth profiling or caching first.</p>
+
+    <h2 id="with-your-ai-agent">With Your AI Agent</h2>
+    <p>With the <a href={`${base}docs/agent-plugin/`}>AI Agent Plugin</a>, ask directly for the slow paths:</p>
+    <pre><code>You: "Which of my API endpoints are slow?"
+
+Your agent queries: laurel-proxy requests --slow 500 --format agent
+The agent reads the durations and URLs, groups repeat offenders, and
+points you at the endpoints worth optimizing first.</code></pre>
+    <p>
+      Because <code>--format agent</code> includes the request and response bodies alongside timing, your agent can
+      also flag things like large uncompressed payloads or N+1-shaped query patterns while it's in there.
+    </p>
+
+    <h2 id="related">Related</h2>
+    <ul>
+      <li><a href={`${base}docs/cli`}>CLI Reference</a> - All commands, flags, and output formats</li>
+      <li><a href={`${base}docs/recipes/verify-a-fix`}>Verify a Fix Without Redeploying</a> - Replay a request against your fixed server</li>
+      <li><a href={`${base}docs/web-ui`}>Web UI</a> - Visual interface for inspecting captured traffic</li>
+      <li><a href={`${base}docs/agent-plugin`}>AI Agent Plugin</a> - AI-assisted HTTP debugging in your terminal</li>
+    </ul>
+  </div>
+</DocsLayout>
+
+<style>
+  .prose-custom h2 {
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-custom p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+  .prose-custom pre {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+  .prose-custom code:not(pre code) {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .prose-custom ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .prose-custom li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+  .prose-custom em {
+    color: var(--color-accent);
+    font-style: normal;
+  }
+  .prose-custom strong {
+    color: var(--color-text-primary);
+  }
+  .prose-custom a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-custom a:hover {
+    color: var(--color-text-primary);
+  }
+</style>

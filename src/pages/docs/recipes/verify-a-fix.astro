@@ -1,0 +1,135 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<DocsLayout title="Verify a Fix Without Redeploying" description="Verify a bug fix locally by replaying a captured request against your running server and diffing the response with Laurel Proxy." headings={[
+  { id: "scenario", text: "Scenario", depth: 2 },
+  { id: "steps", text: "Steps", depth: 2 },
+  { id: "with-your-ai-agent", text: "With Your AI Agent", depth: 2 },
+  { id: "related", text: "Related", depth: 2 },
+]}>
+  <div class="prose-custom">
+    <h2 id="scenario">Scenario</h2>
+    <p>
+      You just changed some code to fix a bug that showed up as a failing request. Before committing, you want proof
+      it's actually fixed &mdash; without manually re-triggering the original client action (submitting a form,
+      calling the mobile app, waiting for a webhook) and without redeploying anywhere.
+    </p>
+
+    <h2 id="steps">Steps</h2>
+
+    <p>Find the original failing request and note its ID:</p>
+    <pre><code>laurel-proxy requests --failed --format table</code></pre>
+    <pre><code>  METHOD  STATUS  HOST                          PATH                          TIME      SIZE
+  ──────────────────────────────────────────────────────────────────────────────────────────────
+  POST    422     api.example.com               /v1/orders                   84ms      212B
+
+  1 total (showing 1, offset 0)</code></pre>
+
+    <p>Look up the full request to get its ID:</p>
+    <pre><code>laurel-proxy requests --failed --format json</code></pre>
+
+    <p>Apply your fix locally, then replay the exact same captured request against your fixed server with <code>--diff</code>:</p>
+    <pre><code>laurel-proxy replay req_8f3a2c1b --diff</code></pre>
+    <p>
+      <code>replay &lt;id&gt;</code> re-sends the captured request &mdash; same method, headers, and body &mdash;
+      to the same URL. The <code>--diff</code> flag compares the new response against the response that was
+      originally captured and reports whether the request is now <strong>improved</strong>, <strong>regressed</strong>,
+      <strong>changed</strong>, or <strong>unchanged</strong>.
+    </p>
+
+    <p>Example output:</p>
+    <pre><code>  DIFF: POST https://api.example.com/v1/orders
+  status:  422 -&gt; 201 [CHANGED]
+  body:    [CHANGED]
+
+  result: improved</code></pre>
+
+    <p>
+      If you need to test a variation &mdash; a different header, body, or URL &mdash; override just that piece
+      without needing the full original request:
+    </p>
+    <pre><code>{`laurel-proxy replay req_8f3a2c1b --body '{"quantity": 2}' --diff`}</code></pre>
+
+    <p>Exit codes make this scriptable: <code>replay --diff</code> exits <code>0</code> when the replayed response is 2xx, and <code>1</code> when it's 4xx/5xx &mdash; so you can wire it into a pre-commit check or CI step.</p>
+
+    <h2 id="with-your-ai-agent">With Your AI Agent</h2>
+    <p>With the <a href={`${base}docs/agent-plugin/`}>AI Agent Plugin</a>, let your agent close the loop after making a fix:</p>
+    <pre><code>You: "I think I fixed the 422 on /v1/orders. Verify it."
+
+Your agent runs: laurel-proxy replay req_8f3a2c1b --diff
+The agent reads the result field, confirms status changed from 422 to
+201, and reports back that the fix is verified.</code></pre>
+    <p>
+      Your agent can chain this straight after applying a fix it made itself &mdash; find the failing request, patch the code, replay with <code>--diff</code>, and confirm before telling you it's done.
+    </p>
+
+    <h2 id="related">Related</h2>
+    <ul>
+      <li><a href={`${base}docs/cli`}>CLI Reference</a> - All commands, flags, and output formats</li>
+      <li><a href={`${base}docs/recipes/debug-422`}>Debug 422 Errors</a> - Trace validation failures back to the request</li>
+      <li><a href={`${base}docs/recipes/debug-webhook`}>Debug a Failing Webhook</a> - Inspect webhook traffic from Stripe or Twilio</li>
+      <li><a href={`${base}docs/agent-plugin`}>AI Agent Plugin</a> - AI-assisted HTTP debugging in your terminal</li>
+    </ul>
+  </div>
+</DocsLayout>
+
+<style>
+  .prose-custom h2 {
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-custom p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+  .prose-custom pre {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+  .prose-custom code:not(pre code) {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .prose-custom ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .prose-custom li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+  .prose-custom em {
+    color: var(--color-accent);
+    font-style: normal;
+  }
+  .prose-custom strong {
+    color: var(--color-text-primary);
+  }
+  .prose-custom a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-custom a:hover {
+    color: var(--color-text-primary);
+  }
+</style>

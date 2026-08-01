@@ -1,0 +1,122 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<DocsLayout title="Turn Captured Traffic into a Shareable cURL Command" description="Copy any captured request as a ready-to-run cURL command from the Laurel Proxy Web UI to share with teammates or paste into a bug report." headings={[
+  { id: "scenario", text: "Scenario", depth: 2 },
+  { id: "steps", text: "Steps", depth: 2 },
+  { id: "with-your-ai-agent", text: "With Your AI Agent", depth: 2 },
+  { id: "related", text: "Related", depth: 2 },
+]}>
+  <div class="prose-custom">
+    <h2 id="scenario">Scenario</h2>
+    <p>
+      You found the exact request that reproduces a bug and now you need to hand it to a teammate, paste it into a
+      GitHub issue, or run it again yourself from a terminal &mdash; without manually reconstructing the URL,
+      headers, and body by hand.
+    </p>
+
+    <h2 id="steps">Steps</h2>
+
+    <p>Start the proxy and open the Web UI:</p>
+    <pre><code>laurel-proxy start</code></pre>
+    <p>The Web UI is served on port <strong>8081</strong> by default &mdash; open <code>http://127.0.0.1:8081</code> in your browser.</p>
+
+    <p>Reproduce the request (or find it if it was already captured), then click it in the request list to open the request detail panel.</p>
+
+    <p>In the detail panel header, click the <strong>cURL</strong> button next to the Repeater button.</p>
+    <p>
+      This copies a complete, ready-to-run <code>curl</code> command to your clipboard &mdash; method, headers
+      (proxy-internal headers like <code>Connection</code> and <code>Transfer-Encoding</code> are stripped), body,
+      and URL &mdash; and the button briefly shows <strong>Copied!</strong> to confirm.
+    </p>
+
+    <p>Example of what gets copied:</p>
+    <pre><code>{`curl -X POST \\
+  -H 'Content-Type: application/json' \\
+  -H 'Authorization: Bearer sk_live_...' \\
+  -d '{"amount": 4200, "currency": "usd"}' \\
+  https://api.example.com/v1/charges`}</code></pre>
+
+    <p>Paste it directly into a Slack message, a GitHub issue, or your terminal to re-run the exact request.</p>
+
+    <h2 id="with-your-ai-agent">With Your AI Agent</h2>
+    <p>The <a href={`${base}docs/agent-plugin/`}>AI Agent Plugin</a> works from the terminal rather than the Web UI, so instead of clicking the cURL button yourself, ask your agent to look up the request and build the command from the captured data:</p>
+    <pre><code>You: "Give me a curl command for the failing charge request"
+
+Your agent queries: laurel-proxy request req_9c21ab4f --format agent
+The agent reads the method, headers, and body from the captured
+request and writes out an equivalent curl command for you to copy.</code></pre>
+    <p>
+      This is useful when you want the command written into a bug report or test file directly, rather than just sitting on your clipboard.
+    </p>
+
+    <h2 id="related">Related</h2>
+    <ul>
+      <li><a href={`${base}docs/web-ui`}>Web UI</a> - Visual interface for inspecting captured traffic</li>
+      <li><a href={`${base}docs/cli`}>CLI Reference</a> - All commands, flags, and output formats</li>
+      <li><a href={`${base}docs/recipes/debug-webhook`}>Debug a Failing Webhook</a> - Inspect webhook traffic from Stripe or Twilio</li>
+      <li><a href={`${base}docs/agent-plugin`}>AI Agent Plugin</a> - AI-assisted HTTP debugging in your terminal</li>
+    </ul>
+  </div>
+</DocsLayout>
+
+<style>
+  .prose-custom h2 {
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-custom p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+  .prose-custom pre {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+  .prose-custom code:not(pre code) {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .prose-custom ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .prose-custom li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+  .prose-custom em {
+    color: var(--color-accent);
+    font-style: normal;
+  }
+  .prose-custom strong {
+    color: var(--color-text-primary);
+  }
+  .prose-custom a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-custom a:hover {
+    color: var(--color-text-primary);
+  }
+</style>

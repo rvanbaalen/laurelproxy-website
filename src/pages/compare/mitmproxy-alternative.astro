@@ -1,0 +1,214 @@
+---
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.astro";
+import InstallBlock from "../../components/InstallBlock.astro";
+import Footer from "../../components/Footer.astro";
+
+const base = import.meta.env.BASE_URL;
+
+const rows = [
+  ["Price", "Free, open source (MIT)", "Free, open source"],
+  ["Platforms", "macOS, Linux (no Windows)", "macOS, Linux, Windows"],
+  ["Interface", "CLI, interactive TUI, Web UI, REST API", "CLI/TUI (mitmproxy), Web UI (mitmweb), headless (mitmdump)"],
+  ["HTTPS interception", "Yes — local root CA", "Yes — local root CA"],
+  ["WebSocket capture", "No", "Yes"],
+  ["HTTP/2 support", "No — MITM'd connections pinned to HTTP/1.1", "Yes"],
+  ["Live interception / rewriting", "No", "Yes — pause and edit flows, or automate it with scripts"],
+  ["Scripting / extensibility", "CLI filters and flags only", "Yes — full Python addon API (core strength)"],
+  ["AI agent integration", "Claude Code plugin + skill, --format agent output", "None built-in"],
+  ["Setup for a Web UI", "Built in, no config", "mitmweb included, but less feature-rich than a dedicated dashboard"],
+];
+
+const faqs = [
+  {
+    q: "Aren't Laurel Proxy and mitmproxy both free?",
+    a: "Yes. Both are free and open source, so price isn't the differentiator here — workflow is. mitmproxy is a scriptable Python toolkit; Laurel Proxy is a ready-made CLI, Web UI, and AI-agent integration with nothing to script.",
+  },
+  {
+    q: "Does Laurel Proxy support Python scripting like mitmproxy?",
+    a: "No. Laurel Proxy has no scripting API. It offers structured CLI filters and a REST API instead, but nothing like mitmproxy's addon system for writing custom interception logic.",
+  },
+  {
+    q: "Which one should an AI coding agent use?",
+    a: "Laurel Proxy is purpose-built for this: it ships a Claude Code plugin and skill, plus a --format agent CLI output with decoded bodies and an is_error flag. mitmproxy has no native agent integration, though its Python API could be scripted to build something similar.",
+  },
+];
+---
+
+<Base
+  title="Laurel Proxy vs mitmproxy: Which Free Proxy Fits You?"
+  description="Both are free and open source. Compare Laurel Proxy's ready-made Web UI and AI-agent output against mitmproxy's Python scripting and WebSocket support."
+  structuredData={{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  }}
+>
+  <Nav />
+
+  <main id="main" role="main">
+    <!-- Hero -->
+    <section class="px-6 md:px-12 pt-16 md:pt-24 pb-12 md:pb-16">
+      <div class="max-w-3xl mx-auto text-center">
+        <span class="inline-block text-xs text-accent border border-accent/30 rounded-full px-3 py-1 mb-6 font-medium">
+          mitmproxy Alternative
+        </span>
+
+        <h1 class="text-text-primary text-3xl md:text-5xl font-extrabold tracking-tight leading-[1.1] mb-5">
+          Laurel Proxy vs <span class="text-accent">mitmproxy</span>
+        </h1>
+
+        <p class="text-text-secondary text-base md:text-xl leading-relaxed mb-8 max-w-2xl mx-auto">
+          Both are free and open source. mitmproxy is a scriptable Python toolkit for anyone who wants full
+          programmatic control. Laurel Proxy is a ready-made CLI, Web UI, and REST API tuned for developer and
+          AI-agent workflows out of the box. Here's an honest comparison.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <InstallBlock />
+        </div>
+      </div>
+    </section>
+
+    <!-- Comparison table -->
+    <section class="px-6 md:px-12 py-12 md:py-16 border-t border-border">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-text-primary text-2xl md:text-3xl font-bold tracking-tight mb-6 text-center">
+          Feature comparison
+        </h2>
+        <div class="overflow-x-auto rounded-lg border border-border">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-bg-secondary">
+                <th class="text-left text-text-primary font-semibold uppercase tracking-wide text-xs px-4 py-3 border-b border-border">Feature</th>
+                <th class="text-left text-accent font-semibold uppercase tracking-wide text-xs px-4 py-3 border-b border-border">Laurel Proxy</th>
+                <th class="text-left text-text-primary font-semibold uppercase tracking-wide text-xs px-4 py-3 border-b border-border">mitmproxy</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(([feature, laurel, mitm], i) => (
+                <tr class={i % 2 === 0 ? "" : "bg-bg-secondary/40"}>
+                  <td class="px-4 py-3 border-b border-border text-text-primary font-medium align-top">{feature}</td>
+                  <td class="px-4 py-3 border-b border-border text-text-secondary align-top">{laurel}</td>
+                  <td class="px-4 py-3 border-b border-border text-text-secondary align-top">{mitm}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Where mitmproxy is better -->
+    <section class="px-6 md:px-12 py-12 md:py-16 border-t border-border">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="text-text-primary text-2xl md:text-3xl font-bold tracking-tight mb-6">
+          Where mitmproxy is still better
+        </h2>
+        <p class="text-text-secondary mb-6 leading-relaxed">
+          mitmproxy is the most mature open-source MITM tool around, with a decade-plus of development behind it.
+          Be honest with yourself about these gaps before you switch:
+        </p>
+        <ul class="space-y-3">
+          <li class="flex items-start gap-3">
+            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
+            <span class="text-text-secondary"><strong class="text-text-primary">Python scripting.</strong> mitmproxy's addon API lets you write arbitrary interception, rewriting, and automation logic in Python. Laurel Proxy has no scripting layer — you get CLI filters and a REST API, not a programming interface.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
+            <span class="text-text-secondary"><strong class="text-text-primary">WebSocket traffic.</strong> Laurel Proxy does not capture WebSocket connections at all. mitmproxy does.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
+            <span class="text-text-secondary"><strong class="text-text-primary">Full HTTP/2 support.</strong> Laurel Proxy pins intercepted HTTPS connections to HTTP/1.1 via ALPN. mitmproxy handles HTTP/2 natively.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
+            <span class="text-text-secondary"><strong class="text-text-primary">Live interception.</strong> mitmproxy can pause a flow mid-transit and edit it manually or via a script before it's forwarded. Laurel Proxy only replays already-captured requests after the fact.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
+            <span class="text-text-secondary"><strong class="text-text-primary">Windows support.</strong> mitmproxy runs on Windows, macOS, and Linux. Laurel Proxy does not support Windows.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Choose / Stick with -->
+    <section class="px-6 md:px-12 py-12 md:py-16 border-t border-border">
+      <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-6">
+        <div class="rounded-lg border border-accent/30 bg-bg-secondary/50 p-6">
+          <h3 class="text-accent font-bold text-lg mb-4">Choose Laurel Proxy if...</h3>
+          <ul class="space-y-2 text-text-secondary text-sm leading-relaxed">
+            <li>You want a ready-made Web UI and REST API without writing any code</li>
+            <li>You debug with Claude Code and want a plugin plus <code class="text-accent">--format agent</code> output out of the box</li>
+            <li>You want a simple, queryable local history (SQLite) instead of flow files</li>
+            <li>You don't need to script custom interception logic</li>
+          </ul>
+        </div>
+        <div class="rounded-lg border border-border bg-bg-secondary/50 p-6">
+          <h3 class="text-text-primary font-bold text-lg mb-4">Stick with mitmproxy if...</h3>
+          <ul class="space-y-2 text-text-secondary text-sm leading-relaxed">
+            <li>You need to script custom interception or rewriting logic in Python</li>
+            <li>You need WebSocket or full HTTP/2 support</li>
+            <li>You need Windows support</li>
+            <li>You want the most mature, widely adopted open-source MITM tool and its addon ecosystem</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="px-6 md:px-12 py-12 md:py-16 border-t border-border">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="text-text-primary text-2xl md:text-3xl font-bold tracking-tight mb-6">
+          Frequently asked questions
+        </h2>
+        <div class="space-y-6">
+          {faqs.map((faq) => (
+            <div>
+              <h3 class="text-text-primary font-semibold mb-1">{faq.q}</h3>
+              <p class="text-text-secondary text-sm leading-relaxed">{faq.a}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Docs links -->
+    <section class="px-6 md:px-12 py-12 md:py-16 border-t border-border">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-text-primary text-xl md:text-2xl font-bold tracking-tight mb-4">
+          Learn more
+        </h2>
+        <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+          <a href={`${base}docs/getting-started/`} class="text-accent hover:text-accent-dim transition-colors">Getting Started &rarr;</a>
+          <a href={`${base}docs/api/`} class="text-accent hover:text-accent-dim transition-colors">REST API &rarr;</a>
+          <a href={`${base}docs/architecture/`} class="text-accent hover:text-accent-dim transition-colors">Architecture &rarr;</a>
+          <a href={`${base}docs/agent-plugin/`} class="text-accent hover:text-accent-dim transition-colors">AI Agent Plugin &rarr;</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom CTA -->
+    <section class="px-6 md:px-12 py-16 md:py-24 border-t border-border">
+      <div class="max-w-2xl mx-auto text-center">
+        <h2 class="text-text-primary text-2xl md:text-3xl font-bold tracking-tight mb-3">
+          Try Laurel Proxy in 10 seconds
+        </h2>
+        <p class="text-text-secondary mb-6">
+          Free, open source, MIT licensed. Works on macOS and Linux.
+        </p>
+        <div class="flex justify-center">
+          <InstallBlock />
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Base>
