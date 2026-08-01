@@ -3,6 +3,7 @@ import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
 import posthog from "astro-posthog";
 import pagefind from "astro-pagefind";
+import sitemap from "@astrojs/sitemap";
 
 import cloudflare from "@astrojs/cloudflare";
 
@@ -15,11 +16,12 @@ export default defineConfig({
       ? [posthog({ posthogKey: process.env.PUBLIC_POSTHOG_KEY })]
       : []),
     pagefind(),
+    sitemap(),
   ],
 
   vite: {
     plugins: [tailwindcss()],
   },
 
-  adapter: process.argv.includes("dev") ? undefined : cloudflare(),
+  adapter: cloudflare(),
 });
