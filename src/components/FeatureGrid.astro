@@ -14,7 +14,12 @@ const features = [
   },
   {
     title: "Web UI Dashboard",
-    description: "Real-time traffic viewer with filters, sorting, detail panel, and built-in request repeater.",
+    description: "Live traffic viewer with filters, sortable columns, and a full request/response detail panel.",
+    link: `${base}docs/web-ui/`,
+  },
+  {
+    title: "Repeater",
+    description: "Load a captured request into an editable tab, resend it, and score the response against the original.",
     link: `${base}docs/web-ui/`,
   },
   {
@@ -28,8 +33,8 @@ const features = [
     link: `${base}docs/agent-plugin/`,
   },
   {
-    title: "Request Replay",
-    description: "Resend any captured request against your local server. Modify headers or body and iterate.",
+    title: "Replay from the CLI",
+    description: "laurel-proxy replay <id> --diff resends a captured request and reports whether the response improved.",
     link: `${base}docs/cli/`,
   },
   {

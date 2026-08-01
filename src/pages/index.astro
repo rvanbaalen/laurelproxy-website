@@ -5,6 +5,7 @@ import InstallBlock from "../components/InstallBlock.astro";
 import Footer from "../components/Footer.astro";
 import TerminalReplay from "../components/TerminalReplay.tsx";
 import WebUIShowcase from "../components/WebUIShowcase.astro";
+import RepeaterShowcase from "../components/RepeaterShowcase.astro";
 import ApiShowcase from "../components/ApiShowcase.astro";
 import FeatureGrid from "../components/FeatureGrid.astro";
 
@@ -117,16 +118,16 @@ const capabilities = [
     <section class="px-6 md:px-12 pt-16 md:pt-24 pb-16 md:pb-24">
       <div class="max-w-3xl mx-auto text-center">
         <span class="inline-block text-xs text-accent border border-accent/30 rounded-full px-3 py-1 mb-6 font-medium">
-          Open Source · MIT License
+          Open Source · MIT License · macOS &amp; Linux
         </span>
 
         <h1 class="text-text-primary text-3xl md:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-5">
-          See every HTTP request.<br />
-          <span class="text-accent">Debug anything.</span>
+          The open source HTTP proxy.<br />
+          <span class="text-accent">See everything. Debug anything.</span>
         </h1>
 
         <p class="text-text-secondary text-base md:text-xl leading-relaxed mb-8 max-w-2xl mx-auto">
-          Capture, inspect, and replay HTTP/HTTPS traffic. Debug web APIs, reverse-engineer mobile apps, or let your AI agent query everything.
+          Intercept HTTPS traffic with a local CA, inspect every request from your terminal or a live web dashboard, and replay requests to prove a fix worked. Free and open source.
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
@@ -222,6 +223,7 @@ const capabilities = [
     </section>
 
     <WebUIShowcase />
+    <RepeaterShowcase />
     <ApiShowcase />
     <FeatureGrid />
 

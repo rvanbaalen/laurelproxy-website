@@ -1,0 +1,98 @@
+---
+const base = import.meta.env.BASE_URL;
+
+const steps = [
+  {
+    title: "Start from real traffic",
+    description:
+      "Open any captured request and send it straight to the Repeater. Method, URL, headers, and body arrive already filled in.",
+  },
+  {
+    title: "Change one thing",
+    description:
+      "Edit the header, fix the malformed field, drop the bad parameter. Everything is editable before you resend.",
+  },
+  {
+    title: "Resend and compare",
+    description:
+      "Cmd/Ctrl+Enter fires the request. The original response travels with it, so the result is scored against what happened the first time.",
+  },
+];
+
+const verdicts = [
+  { label: "IMPROVED", note: "was failing, now succeeds", class: "text-accent" },
+  { label: "REGRESSED", note: "was succeeding, now fails", class: "text-red-400" },
+  { label: "CHANGED", note: "different status than before", class: "text-yellow-400" },
+  { label: "UNCHANGED", note: "same status as the original", class: "text-text-muted" },
+];
+---
+
+<section class="px-6 md:px-12 py-16 md:py-24 border-t border-border">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-10">
+      <div class="text-accent text-xs uppercase tracking-[2px] mb-3 font-medium">Built for iteration</div>
+      <h2 class="text-text-primary text-2xl md:text-3xl font-bold tracking-tight mb-3">
+        A request builder that starts from real traffic
+      </h2>
+      <p class="text-text-secondary max-w-2xl mx-auto">
+        Most API clients start with an empty form, so you rebuild a request that already happened. The Repeater starts from the
+        one you captured, keeps the original response alongside it, and tells you whether your change actually helped.
+      </p>
+    </div>
+
+    <img
+      src={`${base}screenshots/web-ui-repeater.png`}
+      alt="Laurel Proxy Repeater showing a captured request loaded into an editable tab with the replayed response compared against the original"
+      loading="lazy"
+      class="w-full rounded-lg border border-accent/20 mb-10"
+      style="box-shadow: 0 0 30px rgba(34, 197, 94, 0.08), 0 0 60px rgba(34, 197, 94, 0.04);"
+    />
+
+    <div class="grid md:grid-cols-3 gap-6 mb-10">
+      {steps.map((step, index) => (
+        <div class="flex items-start gap-3">
+          <span class="mt-0.5 shrink-0 w-6 h-6 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-bold flex items-center justify-center">
+            {index + 1}
+          </span>
+          <div>
+            <h3 class="text-text-primary font-semibold text-sm mb-1">{step.title}</h3>
+            <p class="text-text-secondary text-sm leading-relaxed">{step.description}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="border border-border rounded-lg p-6 mb-8">
+      <p class="text-text-secondary text-sm mb-4">
+        Every replay is labelled by comparing its status code against the original response:
+      </p>
+      <div class="grid sm:grid-cols-2 gap-x-8 gap-y-3">
+        {verdicts.map((verdict) => (
+          <div class="flex items-baseline gap-3">
+            <span class={`font-mono text-xs font-bold shrink-0 ${verdict.class}`}>{verdict.label}</span>
+            <span class="text-text-secondary text-sm">{verdict.note}</span>
+          </div>
+        ))}
+      </div>
+      <p class="text-text-muted text-xs mt-4">
+        Open as many tabs as you need. The same comparison is available from the terminal with
+        <code class="text-accent">laurel-proxy replay &lt;id&gt; --diff</code>.
+      </p>
+    </div>
+
+    <div class="text-center flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+      <a
+        href={`${base}docs/web-ui/`}
+        class="text-accent hover:text-accent-dim text-sm font-medium transition-colors"
+      >
+        Read docs: Repeater &rarr;
+      </a>
+      <a
+        href={`${base}docs/recipes/verify-a-fix/`}
+        class="text-accent hover:text-accent-dim text-sm font-medium transition-colors"
+      >
+        Recipe: verify a fix without redeploying &rarr;
+      </a>
+    </div>
+  </div>
+</section>
