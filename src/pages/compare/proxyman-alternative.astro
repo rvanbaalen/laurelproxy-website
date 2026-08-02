@@ -11,10 +11,10 @@ const rows = [
   ["Platforms", "macOS, Linux (no Windows)", "macOS-focused"],
   ["Interface", "CLI, interactive TUI, Web UI, REST API", "Native desktop GUI"],
   ["HTTPS interception", "Yes — local root CA", "Yes — local root CA"],
-  ["WebSocket capture", "No", "Yes"],
+  ["WebSocket capture", "Yes — capture, replay, and follow", "Yes"],
   ["HTTP/2 support", "No — MITM'd connections pinned to HTTP/1.1", "Yes"],
   ["Request breakpoints / live rewriting", "No", "Yes"],
-  ["Bandwidth throttling", "No", "Yes"],
+  ["Bandwidth throttling", "Yes — presets or custom rates", "Yes"],
   ["Scripting / extensibility", "CLI filters and flags only", "Limited — GUI-first tool"],
   ["AI agent integration", "Claude Code plugin + skill, --format agent output", "None built-in"],
 ];
@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "Can Laurel Proxy fully replace Proxyman?",
-    a: "Not for every workflow. Laurel Proxy is a strong fit if you want a free, terminal-first, AI-agent-friendly proxy on macOS or Linux. Proxyman still wins on WebSocket capture, breakpoints, throttling, and native macOS polish.",
+    a: "Not for every workflow. Laurel Proxy is a strong fit if you want a free, terminal-first, AI-agent-friendly proxy on macOS or Linux, and it now captures WebSocket traffic and throttles bandwidth too. Proxyman still wins on request breakpoints, full HTTP/2 support, and native macOS polish.",
   },
 ];
 ---
@@ -114,15 +114,7 @@ const faqs = [
         <ul class="space-y-3">
           <li class="flex items-start gap-3">
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
-            <span class="text-text-secondary"><strong class="text-text-primary">WebSocket traffic.</strong> Laurel Proxy does not capture WebSocket connections at all. Proxyman does.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
             <span class="text-text-secondary"><strong class="text-text-primary">Request breakpoints.</strong> Proxyman can pause a live request or response and let you edit it before it continues. Laurel Proxy only replays already-captured requests after the fact.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
-            <span class="text-text-secondary"><strong class="text-text-primary">Bandwidth throttling.</strong> Proxyman can simulate slow or constrained network conditions. Laurel Proxy has no throttling feature.</span>
           </li>
           <li class="flex items-start gap-3">
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
@@ -146,15 +138,14 @@ const faqs = [
             <li>You're on Linux, where Proxyman isn't a fit</li>
             <li>You or your AI agent want to query traffic from a terminal or REST API</li>
             <li>You debug with Claude Code and want <code class="text-accent">--format agent</code> output</li>
+            <li>You want WebSocket capture and bandwidth throttling without a paid tier</li>
           </ul>
         </div>
         <div class="rounded-lg border border-border bg-bg-secondary/50 p-6">
           <h3 class="text-text-primary font-bold text-lg mb-4">Stick with Proxyman if...</h3>
           <ul class="space-y-2 text-text-secondary text-sm leading-relaxed">
             <li>You want a native macOS app rather than a browser-based UI</li>
-            <li>You need to inspect WebSocket traffic</li>
             <li>You need breakpoints to pause and edit live requests</li>
-            <li>You need bandwidth throttling or simulated network conditions</li>
             <li>You need full HTTP/2 fidelity</li>
           </ul>
         </div>

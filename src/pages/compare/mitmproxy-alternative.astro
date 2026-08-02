@@ -11,7 +11,7 @@ const rows = [
   ["Platforms", "macOS, Linux (no Windows)", "macOS, Linux, Windows"],
   ["Interface", "CLI, interactive TUI, Web UI, REST API", "CLI/TUI (mitmproxy), Web UI (mitmweb), headless (mitmdump)"],
   ["HTTPS interception", "Yes — local root CA", "Yes — local root CA"],
-  ["WebSocket capture", "No", "Yes"],
+  ["WebSocket capture", "Yes — capture, replay, and follow", "Yes"],
   ["HTTP/2 support", "No — MITM'd connections pinned to HTTP/1.1", "Yes"],
   ["Live interception / rewriting", "No", "Yes — pause and edit flows, or automate it with scripts"],
   ["Scripting / extensibility", "CLI filters and flags only", "Yes — full Python addon API (core strength)"],
@@ -37,7 +37,7 @@ const faqs = [
 
 <Base
   title="Laurel Proxy vs mitmproxy: Which Free Proxy Fits You?"
-  description="Both are free and open source. Compare Laurel Proxy's ready-made Web UI and AI-agent output against mitmproxy's Python scripting and WebSocket support."
+  description="Both are free and open source. Compare Laurel Proxy's ready-made Web UI, WebSocket capture, and AI-agent output against mitmproxy's Python scripting and full HTTP/2 support."
   structuredData={{
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -120,10 +120,6 @@ const faqs = [
           </li>
           <li class="flex items-start gap-3">
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
-            <span class="text-text-secondary"><strong class="text-text-primary">WebSocket traffic.</strong> Laurel Proxy does not capture WebSocket connections at all. mitmproxy does.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
             <span class="text-text-secondary"><strong class="text-text-primary">Full HTTP/2 support.</strong> Laurel Proxy pins intercepted HTTPS connections to HTTP/1.1 via ALPN. mitmproxy handles HTTP/2 natively.</span>
           </li>
           <li class="flex items-start gap-3">
@@ -154,7 +150,7 @@ const faqs = [
           <h3 class="text-text-primary font-bold text-lg mb-4">Stick with mitmproxy if...</h3>
           <ul class="space-y-2 text-text-secondary text-sm leading-relaxed">
             <li>You need to script custom interception or rewriting logic in Python</li>
-            <li>You need WebSocket or full HTTP/2 support</li>
+            <li>You need full HTTP/2 support</li>
             <li>You need Windows support</li>
             <li>You want the most mature, widely adopted open-source MITM tool and its addon ecosystem</li>
           </ul>

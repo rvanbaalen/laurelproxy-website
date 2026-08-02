@@ -11,10 +11,10 @@ const rows = [
   ["Platforms", "macOS, Linux (no Windows)", "macOS, Windows, Linux"],
   ["Interface", "CLI, interactive TUI, Web UI, REST API", "Desktop GUI"],
   ["HTTPS interception", "Yes — local root CA", "Yes — SSL Proxying with root CA"],
-  ["WebSocket capture", "No", "Yes"],
+  ["WebSocket capture", "Yes — capture, replay, and follow", "Yes"],
   ["HTTP/2 support", "No — MITM'd connections pinned to HTTP/1.1", "Yes"],
   ["Request breakpoints / live rewriting", "No", "Yes"],
-  ["Bandwidth throttling", "No", "Yes"],
+  ["Bandwidth throttling", "Yes — presets or custom rates", "Yes"],
   ["Scripting / extensibility", "CLI filters and flags only", "Rewrite rules, Map Local/Remote (no scripting API)"],
   ["AI agent integration", "Claude Code plugin + skill, --format agent output", "None built-in"],
 ];
@@ -30,14 +30,14 @@ const faqs = [
   },
   {
     q: "Can Laurel Proxy fully replace Charles Proxy?",
-    a: "Not for every workflow. Laurel Proxy is a strong fit for terminal-first and AI-agent-assisted debugging, but it has no request breakpoints, no bandwidth throttling, and no WebSocket capture — all of which Charles provides.",
+    a: "Not for every workflow. Laurel Proxy is a strong fit for terminal-first and AI-agent-assisted debugging, and it now captures WebSocket traffic and throttles bandwidth to simulate real-world network conditions. It still has no request breakpoints and pins intercepted HTTPS connections to HTTP/1.1 — Charles wins on both.",
   },
 ];
 ---
 
 <Base
   title="Laurel Proxy vs Charles Proxy: A Free, Open Alternative"
-  description="Compare Laurel Proxy and Charles Proxy: free vs. paid, terminal-first vs. GUI, AI-agent support, and where Charles still wins on breakpoints and throttling."
+  description="Compare Laurel Proxy and Charles Proxy: free vs. paid, terminal-first vs. GUI, AI-agent support, and where Charles still wins on breakpoints and HTTP/2."
   structuredData={{
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -63,7 +63,7 @@ const faqs = [
         </h1>
 
         <p class="text-text-secondary text-base md:text-xl leading-relaxed mb-8 max-w-2xl mx-auto">
-          Charles Proxy is a mature, paid GUI tool with breakpoints and throttling. Laurel Proxy is a free,
+          Charles Proxy is a mature, paid GUI tool with request breakpoints and full HTTP/2 support. Laurel Proxy is a free,
           open-source, terminal-first proxy built for developers and AI agents. Here's an honest comparison.
         </p>
 
@@ -115,15 +115,7 @@ const faqs = [
         <ul class="space-y-3">
           <li class="flex items-start gap-3">
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
-            <span class="text-text-secondary"><strong class="text-text-primary">WebSocket traffic.</strong> Laurel Proxy does not capture WebSocket connections at all. Charles does.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
             <span class="text-text-secondary"><strong class="text-text-primary">Request breakpoints.</strong> Charles can pause a live request or response mid-flight and let you edit it before it continues. Laurel Proxy only replays already-captured requests after the fact.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
-            <span class="text-text-secondary"><strong class="text-text-primary">Bandwidth throttling.</strong> Charles can simulate slow or constrained network conditions. Laurel Proxy has no throttling feature.</span>
           </li>
           <li class="flex items-start gap-3">
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
@@ -147,15 +139,14 @@ const faqs = [
             <li>You or your AI agent want to query traffic from a terminal or REST API</li>
             <li>You debug with Claude Code and want <code class="text-accent">--format agent</code> output</li>
             <li>You want a queryable local history without manual session files</li>
+            <li>You want WebSocket capture and bandwidth throttling without a paid license</li>
           </ul>
         </div>
         <div class="rounded-lg border border-border bg-bg-secondary/50 p-6">
           <h3 class="text-text-primary font-bold text-lg mb-4">Stick with Charles Proxy if...</h3>
           <ul class="space-y-2 text-text-secondary text-sm leading-relaxed">
             <li>You need Windows support</li>
-            <li>You need to inspect WebSocket traffic</li>
             <li>You need breakpoints to pause and edit live requests</li>
-            <li>You need bandwidth throttling or simulated network conditions</li>
             <li>You need full HTTP/2 fidelity</li>
           </ul>
         </div>
