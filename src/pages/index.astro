@@ -87,6 +87,39 @@ const capabilities = [
       { type: "highlight" as const, text: "200 OK (12ms) ✓" },
     ],
   },
+  {
+    scenario: "Reproducing how your app behaves on a bad connection",
+    title: "Bandwidth Throttling",
+    description:
+      "Your app looks fine on office WiFi and falls apart on a customer's spotty 4G. Apply a preset or exact down/up/latency values, and every connection through the proxy shares that simulated pipe — concurrent requests queue and slow down exactly like they would on a real constrained link.",
+    docsLink: "docs/cli/#throttle",
+    docsLabel: "Throttle Command",
+    lines: [
+      { type: "prompt" as const, text: "$ laurel-proxy throttle 3g" },
+      { type: "output" as const, text: "Throttle: 3g (780 kbps down, 330 kbps up, 100ms latency)" },
+      { type: "output" as const, text: "" },
+      { type: "prompt" as const, text: "$ laurel-proxy requests --host api.example.com" },
+      { type: "highlight" as const, text: "GET  /api/feed        200  612ms" },
+      { type: "output" as const, text: "GET  /api/user/prefs  200   38ms" },
+      { type: "comment" as const, text: "# duration includes the simulated delay" },
+    ],
+  },
+  {
+    scenario: "Debugging a flaky live-chat feature",
+    title: "WebSocket Capture & Replay",
+    description:
+      "Real-time features don't fit the request/response model your other tools assume. Laurel Proxy records the handshake like any other request, decodes every frame in both directions, and replays the whole exchange to reproduce a bug that only shows up mid-connection.",
+    docsLink: "docs/cli/#messages",
+    docsLabel: "Messages Command",
+    lines: [
+      { type: "prompt" as const, text: "$ laurel-proxy requests --kind websocket --format agent" },
+      { type: "highlight" as const, text: "GET /socket  101  kind: websocket" },
+      { type: "output" as const, text: "" },
+      { type: "prompt" as const, text: "$ laurel-proxy messages a91f --follow" },
+      { type: "output" as const, text: '→ text  {"type": "ping"}' },
+      { type: "highlight" as const, text: '← text  {"type": "error", "code": 409}' },
+    ],
+  },
 ];
 ---
 
