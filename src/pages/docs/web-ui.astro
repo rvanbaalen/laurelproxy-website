@@ -13,14 +13,17 @@ const base = import.meta.env.BASE_URL;
   { id: "filtering-traffic", text: "Filtering Traffic", depth: 2 },
   { id: "status-code-filters", text: "Status code filters", depth: 3 },
   { id: "method-filters", text: "Method filters", depth: 3 },
+  { id: "ws-filter", text: "WebSocket filter", depth: 3 },
   { id: "url-search", text: "URL search", depth: 3 },
   { id: "combining-filters", text: "Combining filters", depth: 3 },
   { id: "request-detail-panel", text: "Request Detail Panel", depth: 2 },
   { id: "response-tab", text: "Response tab", depth: 3 },
   { id: "request-tab", text: "Request tab", depth: 3 },
+  { id: "messages-tab", text: "Messages tab", depth: 3 },
   { id: "detail-metadata", text: "Detail metadata", depth: 3 },
   { id: "curl-export", text: "cURL export", depth: 3 },
   { id: "repeater", text: "Repeater", depth: 2 },
+  { id: "bandwidth-throttling", text: "Bandwidth Throttling", depth: 2 },
   { id: "proxy-controls", text: "Proxy Controls", depth: 2 },
   { id: "real-time-streaming", text: "Real-time Streaming", depth: 2 },
   { id: "keyboard-shortcuts", text: "Keyboard Shortcuts", depth: 2 },
@@ -45,6 +48,7 @@ const base = import.meta.env.BASE_URL;
       <li><strong>System Proxy</strong> -- toggle for macOS system proxy routing</li>
       <li><strong>Filter search bar</strong> -- full-text URL search with keyboard shortcut hint</li>
       <li><strong>Traffic / Repeater</strong> -- view switcher tabs</li>
+      <li><strong>Throttle dropdown</strong> -- <code>off</code> plus six network presets, and a sliders button for custom rates (see <a href="#bandwidth-throttling">Bandwidth Throttling</a>)</li>
       <li><strong>Clear</strong> -- delete all captured traffic</li>
       <li><strong>CA Cert</strong> -- download the root CA certificate for HTTPS interception</li>
     </ul>
@@ -65,7 +69,7 @@ open http://127.0.0.1:9001</code></pre>
       <thead><tr><th>Column</th><th>Description</th></tr></thead>
       <tbody>
         <tr><td><strong>Time</strong></td><td>Timestamp when the request was received (HH:MM:SS.ms)</td></tr>
-        <tr><td><strong>Method</strong></td><td>HTTP method, color-coded (green for GET, blue for POST, orange for PUT, etc.)</td></tr>
+        <tr><td><strong>Method</strong></td><td>HTTP method, color-coded (green for GET, blue for POST, orange for PUT, etc.). A WebSocket connection's <code>101</code> handshake row gets a small <strong>WS</strong> badge next to the method instead</td></tr>
         <tr><td><strong>Status</strong></td><td>Response status code, color-coded (green for 2xx, yellow for 3xx, orange for 4xx, red for 5xx)</td></tr>
         <tr><td><strong>Path</strong></td><td>Request URL path</td></tr>
         <tr><td><strong>Host</strong></td><td>Target hostname</td></tr>
@@ -84,7 +88,7 @@ open http://127.0.0.1:9001</code></pre>
     <p>Above the column headers on the right side, two counters show at a glance how many requests are currently visible and how many of those are errors (4xx and 5xx status codes). For example, <strong>13</strong> requests <strong>2</strong> errors. When filters are active, the counter updates to show the filtered count out of the total, like <strong>1/13</strong> requests.</p>
 
     <h2 id="filtering-traffic">Filtering Traffic</h2>
-    <p>The filter bar below the toolbar lets you narrow the request list instantly. There are two types of filters: status code buttons (All, 2xx, 4xx, 5xx) and method buttons (GET, POST, PUT, DELETE). Filters can be combined with the URL search bar for precise results.</p>
+    <p>The filter bar below the toolbar lets you narrow the request list instantly. There are status code buttons (All, 2xx, 4xx, 5xx), method buttons (GET, POST, PUT, DELETE), and a WS chip for WebSocket connections. Filters can be combined with the URL search bar for precise results.</p>
 
     <h3 id="status-code-filters">Status code filters</h3>
     <p>Click the status code buttons to filter by response category:</p>
@@ -99,6 +103,9 @@ open http://127.0.0.1:9001</code></pre>
 
     <h3 id="method-filters">Method filters</h3>
     <p>Click a method button to filter by HTTP method: GET, POST, PUT, or DELETE. This is useful when you want to isolate write operations (POST/PUT) from read operations (GET).</p>
+
+    <h3 id="ws-filter">WebSocket filter</h3>
+    <p>Click the <strong>WS</strong> chip to show only WebSocket connections. It filters the traffic list that's already loaded in the browser, the same way the status and method chips do, so it composes with them and with the URL search bar rather than making a separate server request.</p>
 
     <h3 id="url-search">URL search</h3>
     <p>Type in the search bar to filter requests by URL path. The filter is applied instantly as you type -- no need to press Enter. The search matches against the full URL path as a substring. Use the keyboard shortcut <code>Cmd+K</code> (macOS) to focus the search bar quickly.</p>
@@ -132,6 +139,18 @@ open http://127.0.0.1:9001</code></pre>
       <li><strong>Body</strong> -- the request body (for POST, PUT, PATCH requests), with syntax highlighting</li>
     </ul>
 
+    <h3 id="messages-tab">Messages tab</h3>
+    <p>Selecting a WebSocket connection's row shows a <strong>Messages</strong> tab instead of Response/Request. It lists every captured frame in order, with a <code>→</code> for frames sent by the client and <code>←</code> for frames received from the server, streamed in live via SSE as the connection stays open. A replay button resends the connection's client-sent frames -- the WebSocket analogue of the Repeater -- preserving the original gaps between frames.</p>
+    <p>
+      Two things worth knowing before you trust what you see: <code>Sec-WebSocket-Extensions</code> is
+      stripped from the upgrade request, so <code>permessage-deflate</code> never gets negotiated on an
+      intercepted connection -- every frame is readable, but the connection itself runs uncompressed. And if
+      the frame decoder gives up on one direction (a malformed frame, an unexpected compression bit, or a
+      frame over the 32&nbsp;MiB cap), the relay keeps that direction working but silently stops recording
+      it -- there is currently no error or badge that surfaces this, so a connection that looks one-sided is
+      the first thing to suspect.
+    </p>
+
     <h3 id="detail-metadata">Detail metadata</h3>
     <p>The metadata bar between the title and the tabs shows four pieces of information:</p>
     <table>
@@ -164,6 +183,17 @@ open http://127.0.0.1:9001</code></pre>
       <li><strong>Right: Response viewer</strong> -- displays the response after sending, with headers and body</li>
     </ul>
     <p>You can open multiple Repeater tabs simultaneously (each tab is a separate request). Click the <strong>+</strong> button to add a new tab, or click <strong>x</strong> to close one. When you send a captured request to the Repeater from the traffic view, it opens in a new tab pre-filled with the original method, URL, headers, and body.</p>
+
+    <h2 id="bandwidth-throttling">Bandwidth Throttling</h2>
+    <p>The toolbar's throttle dropdown offers <code>off</code> plus six presets modeled on real connection types: <code>56k</code>, <code>edge</code>, <code>3g</code>, <code>4g</code>, <code>dsl</code>, and <code>wifi</code>. It shows <code>custom</code> (disabled, unselectable) whenever the live settings don't match any preset exactly.</p>
+    <p>A small sliders button next to the dropdown opens a popover with <strong>Down (kbps)</strong>, <strong>Up (kbps)</strong>, and <strong>Latency (ms)</strong> fields for arbitrary values, equivalent to the CLI's <code>--down</code>/<code>--up</code>/<code>--latency</code> flags. A rejected value (negative, non-finite, or a failed config write) is shown inline in the popover with the server's own error text, and the fields keep your input rather than resetting -- nothing is ever applied optimistically.</p>
+    <p>
+      Throttling models one shared virtual link per direction, so concurrent connections contend for the same
+      bandwidth budget rather than each getting the full rate. This also means it inflates the
+      recorded <strong>duration</strong> of affected requests -- the throttle dropdown's tooltip and an
+      accent <code>*</code> badge on the traffic table's duration column both call this out while
+      throttling is enabled, the same way Chrome DevTools marks throttled network timing.
+    </p>
 
     <h2 id="proxy-controls">Proxy Controls</h2>
     <p>The top toolbar includes two proxy control buttons:</p>

@@ -25,13 +25,18 @@ const base = import.meta.env.BASE_URL;
       <li><strong>Uncompressed capture</strong> -- the proxy strips <code>Accept-Encoding</code> from outbound requests, so upstream servers return plaintext and stored bodies are always readable without a decompression step.</li>
       <li><strong>Body truncation</strong> -- configurable max body size prevents storage bloat. A <code>truncated</code> flag is set on affected records so you know when data was clipped.</li>
       <li><strong>Per-domain cert caching</strong> -- an LRU cache avoids regenerating SSL certificates for frequently accessed domains. Default capacity is 500 entries.</li>
+      <li><strong>Shared-pipe throttling</strong> -- bandwidth throttling models one shared virtual link per direction rather than one per connection, so concurrent requests contend for the same rate budget the way they would on a real network link.</li>
+      <li><strong>Decoupled WebSocket recording</strong> -- frame decoding is separate from the relay, so a decoding problem (a malformed frame, an unexpected compression bit) can never break the live connection. The trade-off is that a decode failure silently stops recording for that direction rather than surfacing an error.</li>
     </ul>
 
     <h2 id="data-storage">Data Storage</h2>
     <p>
       All data is stored in <code>~/.laurel-proxy/data.db</code> (SQLite). The <code>requests</code> table
       has indexes on <code>timestamp</code>, <code>host</code>, <code>status</code>, <code>path</code>,
-      and <code>content_type</code> for fast querying.
+      and <code>content_type</code> for fast querying. A WebSocket connection's <code>101</code> handshake is
+      recorded as an ordinary row with <code>kind: 'websocket'</code>; every frame after that is decoded
+      (RFC 6455) and written to a separate <code>websocket_messages</code> table keyed by the handshake's
+      request id.
     </p>
     <p>
       Request and response bodies are stored as binary blobs. In the API and SSE stream,
@@ -85,7 +90,9 @@ const base = import.meta.env.BASE_URL;
 │   ├── api.ts          # Express REST API + SSE
 │   ├── ssl.ts          # CA generation & per-domain cert caching
 │   ├── events.ts       # Pub/sub event manager
-│   └── config.ts       # Config loading and merging
+│   ├── config.ts       # Config loading and merging
+│   ├── throttle.ts     # Bandwidth throttle presets & shared-link rate limiter
+│   └── ws-frames.ts    # WebSocket frame decoding (RFC 6455)
 ├── storage/            # Database and cleanup
 │   ├── db.ts           # SQLite operations (better-sqlite3)
 │   └── cleanup.ts      # Auto-cleanup job

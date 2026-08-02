@@ -15,7 +15,9 @@ const base = import.meta.env.BASE_URL;
   { id: "real-time-tailing", text: "Real-time tailing", depth: 3 },
   { id: "tui-keyboard-shortcuts", text: "TUI keyboard shortcuts", depth: 3 },
   { id: "request", text: "request", depth: 2 },
+  { id: "messages", text: "messages", depth: 2 },
   { id: "clear", text: "clear", depth: 2 },
+  { id: "throttle", text: "throttle", depth: 2 },
   { id: "trust-ca", text: "trust-ca", depth: 2 },
   { id: "uninstall-ca", text: "uninstall-ca", depth: 2 },
   { id: "proxy-on", text: "proxy-on", depth: 2 },
@@ -95,6 +97,7 @@ DB Size    3.2MB</code></pre>
         <tr><td><code>--host &lt;pattern&gt;</code></td><td></td><td>Filter by hostname (substring match)</td></tr>
         <tr><td><code>--status &lt;code&gt;</code></td><td></td><td>Filter by HTTP status code</td></tr>
         <tr><td><code>--method &lt;method&gt;</code></td><td></td><td>Filter by HTTP method</td></tr>
+        <tr><td><code>--kind &lt;kind&gt;</code></td><td></td><td>Filter by request kind: <code>http</code> or <code>websocket</code>. An unrecognised kind is an error. Also works with <code>--tail</code></td></tr>
         <tr><td><code>--search &lt;pattern&gt;</code></td><td></td><td>Search URLs (substring match)</td></tr>
         <tr><td><code>--since &lt;time&gt;</code></td><td></td><td>After this time (Unix ms or ISO date)</td></tr>
         <tr><td><code>--until &lt;time&gt;</code></td><td></td><td>Before this time (Unix ms or ISO date)</td></tr>
@@ -146,6 +149,9 @@ laurel-proxy requests --format json --host stripe.com | jq '.data[].url'
 
 # LLM-optimized output
 laurel-proxy requests --format agent --failed
+
+# Only WebSocket connections (handshakes appear as ordinary rows, tagged with a WS marker)
+laurel-proxy requests --kind websocket --format agent
 
 # Only failed requests from the last hour
 laurel-proxy requests --failed --last-hour
@@ -201,6 +207,34 @@ laurel-proxy requests --method POST --host api.example.com --tail</code></pre>
     <pre><code>laurel-proxy request a1b2c3d4-e5f6-7890-abcd-ef1234567890
 laurel-proxy request a1b2c3d4-e5f6-7890-abcd-ef1234567890 --format table</code></pre>
 
+    <!-- messages -->
+    <h2 id="messages">messages</h2>
+    <p>Show captured WebSocket frames for a single connection.</p>
+    <pre><code>laurel-proxy messages &lt;id&gt; [options]</code></pre>
+    <table>
+      <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>--follow</code></td><td></td><td>Stream new frames as they arrive</td></tr>
+        <tr><td><code>--limit &lt;n&gt;</code></td><td><code>500</code></td><td>Maximum number of frames per page</td></tr>
+        <tr><td><code>--format &lt;format&gt;</code></td><td><code>table</code></td><td>Output format: <code>table</code>, <code>json</code>, or <code>agent</code></td></tr>
+        <tr><td><code>--ui-port &lt;number&gt;</code></td><td><code>8081</code></td><td>UI/API port</td></tr>
+        <tr><td><code>--db-path &lt;path&gt;</code></td><td><code>~/.laurel-proxy/data.db</code></td><td>Database location</td></tr>
+      </tbody>
+    </table>
+    <p><code>&lt;id&gt;</code> must be the id of a request with <code>kind: 'websocket'</code>. Find it with:</p>
+    <pre><code>laurel-proxy requests --kind websocket --format agent</code></pre>
+    <pre><code>laurel-proxy messages a1b2c3d4-e5f6-7890-abcd-ef1234567890
+laurel-proxy messages a1b2c3d4-e5f6-7890-abcd-ef1234567890 --follow
+laurel-proxy messages a1b2c3d4-e5f6-7890-abcd-ef1234567890 --format json --limit 100</code></pre>
+    <p>
+      Pointing <code>&lt;id&gt;</code> at an HTTP request fails with a message telling you to
+      use <code>laurel-proxy request &lt;id&gt;</code> instead. The output is one page, not the whole
+      connection -- <code>--limit</code> defaults to 500, and every format reports how many frames exist in
+      total so you know when to raise it. In <code>--format json</code>/<code>--format agent</code>, text
+      frames are decoded to UTF-8 strings and non-text frames (binary, ping, pong, close) are base64,
+      with a <code>payload_encoding</code> field saying which.
+    </p>
+
     <!-- clear -->
     <h2 id="clear">clear</h2>
     <p>Delete all captured traffic from the database.</p>
@@ -212,6 +246,60 @@ laurel-proxy request a1b2c3d4-e5f6-7890-abcd-ef1234567890 --format table</code><
       </tbody>
     </table>
     <pre><code>laurel-proxy clear</code></pre>
+
+    <!-- throttle -->
+    <h2 id="throttle">throttle</h2>
+    <p>Simulate slower network conditions on traffic passing through the proxy: a preset modeled on a common connection type, or explicit down/up/latency values.</p>
+    <pre><code>laurel-proxy throttle [preset] [options]</code></pre>
+    <table>
+      <thead><tr><th>Option</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>[preset]</code></td><td>One of <code>56k</code>, <code>edge</code>, <code>3g</code>, <code>4g</code>, <code>dsl</code>, <code>wifi</code>, or <code>off</code></td></tr>
+        <tr><td><code>--down &lt;kbps&gt;</code></td><td>Custom download rate (enables throttling)</td></tr>
+        <tr><td><code>--up &lt;kbps&gt;</code></td><td>Custom upload rate (enables throttling)</td></tr>
+        <tr><td><code>--latency &lt;ms&gt;</code></td><td>Added latency, injected once per HTTP exchange before the first response byte</td></tr>
+        <tr><td><code>--status</code></td><td>Show current throttle settings instead of changing them</td></tr>
+        <tr><td><code>--format &lt;format&gt;</code></td><td>Output format for <code>--status</code>: <code>table</code>, <code>json</code>, or <code>agent</code></td></tr>
+      </tbody>
+    </table>
+    <pre><code># Apply a preset
+laurel-proxy throttle 3g
+
+# Disable
+laurel-proxy throttle off
+
+# Explicit rates (enables throttling)
+laurel-proxy throttle --down 500 --up 100 --latency 200
+
+# Show current settings
+laurel-proxy throttle --status
+laurel-proxy throttle --status --format json</code></pre>
+    <p>Running <code>laurel-proxy throttle</code> with no preset and no rate flags also shows current status, the same as <code>--status</code>. Presets:</p>
+    <table>
+      <thead><tr><th>Preset</th><th>Down (kbps)</th><th>Up (kbps)</th><th>Latency (ms)</th></tr></thead>
+      <tbody>
+        <tr><td><code>56k</code></td><td>56</td><td>33</td><td>120</td></tr>
+        <tr><td><code>edge</code></td><td>240</td><td>200</td><td>400</td></tr>
+        <tr><td><code>3g</code></td><td>780</td><td>330</td><td>100</td></tr>
+        <tr><td><code>4g</code></td><td>4000</td><td>3000</td><td>20</td></tr>
+        <tr><td><code>dsl</code></td><td>2000</td><td>256</td><td>40</td></tr>
+        <tr><td><code>wifi</code></td><td>30000</td><td>15000</td><td>5</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Throttling models <strong>one shared virtual link per direction</strong>, not one per connection --
+      concurrent requests contend for the same bandwidth budget and queue behind each other, the same as a
+      single real network link would. A WebSocket connection is bandwidth-paced in both directions but gets
+      no added latency, since delaying every frame of a long-lived connection would distort the timing that
+      WebSocket debugging usually cares about.
+    </p>
+    <p>
+      Throttling inflates the recorded <code>duration</code> of affected requests -- the proxy's own delay is
+      indistinguishable from upstream slowness in the stored data, the same way Chrome DevTools network
+      throttling works. The web UI marks throttled durations with a badge; <strong>the CLI has no equivalent
+      marker</strong>, so remember this yourself when scripting against <code>laurel-proxy requests</code> or
+      reading <code>duration</code> while throttling is on.
+    </p>
 
     <!-- trust-ca -->
     <h2 id="trust-ca">trust-ca</h2>

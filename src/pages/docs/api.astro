@@ -27,13 +27,39 @@ const statusResponse = `{
   "requestCount": 142,
   "dbSizeBytes": 3358720
 }`;
+
+const throttleGetResponse = `{
+  "settings": { "enabled": true, "downKbps": 780, "upKbps": 330, "latencyMs": 100 },
+  "presets": { "56k": { "...": "..." } }
+}`;
+
+const throttlePutPreset = `curl -X PUT http://127.0.0.1:8081/api/throttle -H "Content-Type: application/json" \\
+  -d '{"preset":"3g"}'`;
+
+const throttlePutExplicit = `curl -X PUT http://127.0.0.1:8081/api/throttle -H "Content-Type: application/json" \\
+  -d '{"enabled":true,"downKbps":500,"upKbps":100,"latencyMs":200}'`;
+
+const messagesResponse = `{
+  "data": [
+    { "direction": "sent", "opcode": "text", "payload": "...", "timestamp": 1700000000000 }
+  ],
+  "total": 812,
+  "limit": 500,
+  "offset": 0
+}`;
+
+const websocketReplayExample = `curl -X POST http://127.0.0.1:8081/api/websocket/replay -H "Content-Type: application/json" \\
+  -d '{"requestId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"}'`;
 ---
 
 <DocsLayout title="REST API Reference" description="Laurel Proxy REST API reference. Query captured HTTP traffic, replay requests, control the proxy, and stream live events over SSE." headings={[
   { id: "get-api-requests", text: "GET /api/requests", depth: 2 },
   { id: "get-api-requests-id", text: "GET /api/requests/:id", depth: 2 },
+  { id: "get-api-requests-id-messages", text: "GET /api/requests/:id/messages", depth: 2 },
   { id: "delete-api-requests", text: "DELETE /api/requests", depth: 2 },
   { id: "get-api-status", text: "GET /api/status", depth: 2 },
+  { id: "get-api-throttle", text: "GET /api/throttle", depth: 2 },
+  { id: "put-api-throttle", text: "PUT /api/throttle", depth: 2 },
   { id: "get-api-ca-crt", text: "GET /api/ca.crt", depth: 2 },
   { id: "post-api-proxy-start", text: "POST /api/proxy/start", depth: 2 },
   { id: "post-api-proxy-stop", text: "POST /api/proxy/stop", depth: 2 },
@@ -41,6 +67,7 @@ const statusResponse = `{
   { id: "post-api-system-proxy-enable", text: "POST /api/system-proxy/enable", depth: 2 },
   { id: "post-api-system-proxy-disable", text: "POST /api/system-proxy/disable", depth: 2 },
   { id: "post-api-replay", text: "POST /api/replay", depth: 2 },
+  { id: "post-api-websocket-replay", text: "POST /api/websocket/replay", depth: 2 },
   { id: "get-api-events", text: "GET /api/events", depth: 2 },
   { id: "post-api-shutdown", text: "POST /api/shutdown", depth: 2 },
   { id: "related", text: "Related", depth: 2 },
@@ -87,6 +114,16 @@ curl "http://127.0.0.1:8081/api/requests?host=example.com&status=200&limit=50"</
     <p>Get full details for a single request, including headers and base64-encoded bodies.</p>
     <pre><code>curl http://127.0.0.1:8081/api/requests/a1b2c3d4-e5f6-7890-abcd-ef1234567890</code></pre>
 
+    <h2 id="get-api-requests-id-messages">GET /api/requests/:id/messages</h2>
+    <p>
+      Get captured WebSocket frames for a connection, paginated. <code>:id</code> is the id of the request
+      whose <code>kind</code> is <code>websocket</code> (the recorded <code>101</code> handshake).
+    </p>
+    <pre><code>curl 'http://127.0.0.1:8081/api/requests/a1b2c3d4-e5f6-7890-abcd-ef1234567890/messages?limit=100&amp;offset=0'</code></pre>
+    <p>Response:</p>
+    <pre><code>{messagesResponse}</code></pre>
+    <p><code>limit</code> defaults to 500, <code>offset</code> to 0; both must be non-negative integers. An unknown or not-yet-populated id returns an empty page (<code>total: 0</code>), not a <code>404</code>. <strong>Payloads are base64-encoded unconditionally</strong>, regardless of opcode -- this is intentionally different from the CLI's <code>--format json</code>/<code>--format agent</code> output, which decodes text frames to UTF-8. Check which surface you're reading from before assuming either encoding.</p>
+
     <h2 id="delete-api-requests">DELETE /api/requests</h2>
     <p>Delete all captured traffic.</p>
     <pre><code>curl -X DELETE http://127.0.0.1:8081/api/requests</code></pre>
@@ -96,6 +133,19 @@ curl "http://127.0.0.1:8081/api/requests?host=example.com&status=200&limit=50"</
     <pre><code>curl http://127.0.0.1:8081/api/status</code></pre>
     <p>Response:</p>
     <pre><code>{statusResponse}</code></pre>
+
+    <h2 id="get-api-throttle">GET /api/throttle</h2>
+    <p>Get current bandwidth throttle settings and the available presets.</p>
+    <pre><code>curl http://127.0.0.1:8081/api/throttle</code></pre>
+    <p>Response:</p>
+    <pre><code>{throttleGetResponse}</code></pre>
+
+    <h2 id="put-api-throttle">PUT /api/throttle</h2>
+    <p>Apply a preset, or set explicit down/up/latency values.</p>
+    <pre><code>{throttlePutPreset}</code></pre>
+    <p><code>{'{"preset":"off"}'}</code> disables throttling. A preset takes full precedence over any <code>enabled</code>/<code>downKbps</code>/<code>upKbps</code>/<code>latencyMs</code> fields sent alongside it -- it replaces the settings object rather than merging into it. Or send explicit fields (omitted fields fall back to the current setting):</p>
+    <pre><code>{throttlePutExplicit}</code></pre>
+    <p>Settings are persisted to <code>~/.laurel-proxy/config.json</code> before being applied to the live throttler. If the write fails, the endpoint returns <code>500</code> and the change is <strong>not</strong> applied. A successful request returns <code>{'{ "settings": { ... } }'}</code>.</p>
 
     <h2 id="get-api-ca-crt">GET /api/ca.crt</h2>
     <p>
@@ -137,6 +187,12 @@ curl "http://127.0.0.1:8081/api/requests?host=example.com&status=200&limit=50"</
     <p>Replay a previously captured request.</p>
     <pre><code>{replayExample}</code></pre>
 
+    <h2 id="post-api-websocket-replay">POST /api/websocket/replay</h2>
+    <p>Reopen a WebSocket connection and resend the client-sent data frames from a previously recorded connection, preserving the original inter-frame gaps. Only frames with opcode <code>text</code> or <code>binary</code> and <code>direction: 'sent'</code> are replayed -- control frames (ping/pong/close) are managed by the WebSocket client itself.</p>
+    <pre><code>{websocketReplayExample}</code></pre>
+    <p>Prefer <code>requestId</code> over the alternative <code>{'{url, frames}'}</code> body shape: a recorded connection's base64-encoded frames routinely exceed Express's default 100&nbsp;kb body-size limit, so posting them inline fails before reaching the replay logic. With <code>requestId</code> the server reads the frames from storage itself, keeping the HTTP request body tiny.</p>
+    <p>A replay refuses (<code>400</code>) if the connection has any truncated client-sent data frame recorded, since replaying a payload cut off at <code>maxBodySize</code> would send corrupted data to a real server. The response includes a <code>stoppedBecause</code> field (<code>close</code>, <code>idle</code>, <code>timeout</code>, or <code>error</code>) plus <code>frameCount</code> and <code>sentAll</code> -- <strong><code>stoppedBecause</code> alone is not a success signal</strong>. <code>idle</code> fires whenever the server's first reply takes longer than 500ms, which is routine for real work happening server-side, and <code>close</code> can mean a clean end or a connection cut short after one frame of three. Check <code>sentAll</code> to know whether the replay actually finished what it was asked to send.</p>
+
     <h2 id="get-api-events">GET /api/events</h2>
     <p>Server-Sent Events stream for real-time updates.</p>
     <pre><code>curl -N http://127.0.0.1:8081/api/events</code></pre>
@@ -144,6 +200,7 @@ curl "http://127.0.0.1:8081/api/requests?host=example.com&status=200&limit=50"</
     <ul>
       <li><code>event: request</code> -- new captured request (data is the request record as JSON)</li>
       <li><code>event: status</code> -- proxy state change (data includes running state and proxy port)</li>
+      <li><code>event: ws-message</code> -- a new WebSocket frame, pushed immediately as it's captured (not batched like <code>request</code>), in the same base64-encoded shape as <code>GET /api/requests/:id/messages</code></li>
     </ul>
 
     <h2 id="post-api-shutdown">POST /api/shutdown</h2>
