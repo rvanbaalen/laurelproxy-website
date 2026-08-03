@@ -12,7 +12,7 @@ const rows = [
   ["Interface", "CLI, interactive TUI, Web UI, REST API", "Native desktop GUI"],
   ["HTTPS interception", "Yes — local root CA", "Yes — local root CA"],
   ["WebSocket capture", "Yes — capture, replay, and follow", "Yes"],
-  ["HTTP/2 support", "No — MITM'd connections pinned to HTTP/1.1", "Yes"],
+  ["HTTP/2 support", "Yes — ALPN-negotiated independently with client and origin", "Yes"],
   ["Request breakpoints / live rewriting", "No", "Yes"],
   ["Bandwidth throttling", "Yes — presets or custom rates", "Yes"],
   ["Scripting / extensibility", "CLI filters and flags only", "Limited — GUI-first tool"],
@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "Can Laurel Proxy fully replace Proxyman?",
-    a: "Not for every workflow. Laurel Proxy is a strong fit if you want a free, terminal-first, AI-agent-friendly proxy on macOS or Linux, and it now captures WebSocket traffic and throttles bandwidth too. Proxyman still wins on request breakpoints, full HTTP/2 support, and native macOS polish.",
+    a: "Not for every workflow. Laurel Proxy is a strong fit if you want a free, terminal-first, AI-agent-friendly proxy on macOS or Linux, and it now captures WebSocket traffic and throttles bandwidth too. Proxyman still wins on request breakpoints and native macOS polish.",
   },
 ];
 ---
@@ -118,10 +118,6 @@ const faqs = [
           </li>
           <li class="flex items-start gap-3">
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
-            <span class="text-text-secondary"><strong class="text-text-primary">Full HTTP/2 support.</strong> Laurel Proxy pins intercepted HTTPS connections to HTTP/1.1 via ALPN. Proxyman handles HTTP/2 natively.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
             <span class="text-text-secondary"><strong class="text-text-primary">Native macOS polish.</strong> Proxyman is a purpose-built macOS menu-bar app. Laurel Proxy's Web UI runs in the browser, not as a native app.</span>
           </li>
         </ul>
@@ -146,7 +142,6 @@ const faqs = [
           <ul class="space-y-2 text-text-secondary text-sm leading-relaxed">
             <li>You want a native macOS app rather than a browser-based UI</li>
             <li>You need breakpoints to pause and edit live requests</li>
-            <li>You need full HTTP/2 fidelity</li>
           </ul>
         </div>
       </div>

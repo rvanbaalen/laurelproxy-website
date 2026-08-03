@@ -12,7 +12,7 @@ const rows = [
   ["Interface", "CLI, interactive TUI, Web UI, REST API", "Desktop GUI"],
   ["HTTPS interception", "Yes — local root CA", "Yes — SSL Proxying with root CA"],
   ["WebSocket capture", "Yes — capture, replay, and follow", "Yes"],
-  ["HTTP/2 support", "No — MITM'd connections pinned to HTTP/1.1", "Yes"],
+  ["HTTP/2 support", "Yes — ALPN-negotiated independently with client and origin", "Yes"],
   ["Request breakpoints / live rewriting", "No", "Yes"],
   ["Bandwidth throttling", "Yes — presets or custom rates", "Yes"],
   ["Scripting / extensibility", "CLI filters and flags only", "Rewrite rules, Map Local/Remote (no scripting API)"],
@@ -30,14 +30,14 @@ const faqs = [
   },
   {
     q: "Can Laurel Proxy fully replace Charles Proxy?",
-    a: "Not for every workflow. Laurel Proxy is a strong fit for terminal-first and AI-agent-assisted debugging, and it now captures WebSocket traffic and throttles bandwidth to simulate real-world network conditions. It still has no request breakpoints and pins intercepted HTTPS connections to HTTP/1.1 — Charles wins on both.",
+    a: "Not for every workflow. Laurel Proxy is a strong fit for terminal-first and AI-agent-assisted debugging, and it now captures WebSocket traffic, throttles bandwidth, and negotiates HTTP/2 with both client and origin automatically. It still has no request breakpoints — Charles wins there.",
   },
 ];
 ---
 
 <Base
   title="Laurel Proxy vs Charles Proxy: A Free, Open Alternative"
-  description="Compare Laurel Proxy and Charles Proxy: free vs. paid, terminal-first vs. GUI, AI-agent support, and where Charles still wins on breakpoints and HTTP/2."
+  description="Compare Laurel Proxy and Charles Proxy: free vs. paid, terminal-first vs. GUI, AI-agent support, and where Charles still wins on breakpoints and Windows support."
   structuredData={{
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -63,7 +63,7 @@ const faqs = [
         </h1>
 
         <p class="text-text-secondary text-base md:text-xl leading-relaxed mb-8 max-w-2xl mx-auto">
-          Charles Proxy is a mature, paid GUI tool with request breakpoints and full HTTP/2 support. Laurel Proxy is a free,
+          Charles Proxy is a mature, paid GUI tool with request breakpoints and Windows support. Laurel Proxy is a free,
           open-source, terminal-first proxy built for developers and AI agents. Here's an honest comparison.
         </p>
 
@@ -119,10 +119,6 @@ const faqs = [
           </li>
           <li class="flex items-start gap-3">
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
-            <span class="text-text-secondary"><strong class="text-text-primary">Full HTTP/2 support.</strong> Laurel Proxy pins intercepted HTTPS connections to HTTP/1.1 via ALPN. If you need to debug HTTP/2-specific behavior, Charles handles it natively.</span>
-          </li>
-          <li class="flex items-start gap-3">
-            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-text-muted shrink-0"></span>
             <span class="text-text-secondary"><strong class="text-text-primary">Windows support.</strong> Charles runs on Windows, macOS, and Linux. Laurel Proxy does not support Windows.</span>
           </li>
         </ul>
@@ -147,7 +143,6 @@ const faqs = [
           <ul class="space-y-2 text-text-secondary text-sm leading-relaxed">
             <li>You need Windows support</li>
             <li>You need breakpoints to pause and edit live requests</li>
-            <li>You need full HTTP/2 fidelity</li>
           </ul>
         </div>
       </div>
