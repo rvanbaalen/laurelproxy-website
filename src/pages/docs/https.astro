@@ -34,6 +34,16 @@ hostname -I | awk '{print $1}'  # Linux`;
         </ul>
       </li>
     </ol>
+    <p>
+      The MITM TLS socket offers ALPN <code>['h2', 'http/1.1']</code> to the client, and the
+      real server is probed separately over its own ALPN handshake -- the two hops negotiate
+      independently, so an HTTP/2 client talking to an HTTP/1.1-only origin (or the reverse)
+      works without any configuration. The origin probe is cached per <code>host:port</code>,
+      but the first request to a given HTTPS origin still costs one extra TLS handshake for
+      that discovery -- invisible to clients, but a real network side effect. See
+      <a href={`${base}docs/http2`}>HTTP/2 Support</a> for the full picture, including what
+      gets recorded.
+    </p>
 
     <h2 id="setup">Setup</h2>
 
@@ -184,6 +194,7 @@ laurel-proxy proxy-on</code></pre>
     <ul>
       <li><a href={`${base}docs/getting-started`}>Getting Started</a> - Install and capture your first request</li>
       <li><a href={`${base}docs/cli`}>CLI Reference</a> - The trust-ca and uninstall-ca commands</li>
+      <li><a href={`${base}docs/http2`}>HTTP/2 Support</a> - How ALPN negotiates each hop independently</li>
       <li><a href={`${base}docs/recipes/ios-capture`}>Capture iOS Traffic</a> - Full walkthrough for iOS device inspection</li>
     </ul>
   </div>

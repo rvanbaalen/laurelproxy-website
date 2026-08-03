@@ -1,0 +1,227 @@
+---
+import DocsLayout from "../../layouts/DocsLayout.astro";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<DocsLayout title="HTTP/2 Support" description="How Laurel Proxy negotiates HTTP/2 independently with clients and origins over ALPN, what gets recorded, and what's still not supported." headings={[
+  { id: "how-it-works", text: "How It Works", depth: 2 },
+  { id: "what-gets-recorded", text: "What Gets Recorded", depth: 2 },
+  { id: "finding-the-mixed-hops-case", text: "Finding the Mixed-Hops Case", depth: 3 },
+  { id: "cli", text: "CLI", depth: 2 },
+  { id: "rest-api", text: "REST API", depth: 2 },
+  { id: "web-ui", text: "Web UI", depth: 2 },
+  { id: "websocket-connections", text: "WebSocket Connections", depth: 2 },
+  { id: "not-supported", text: "Not Supported", depth: 2 },
+  { id: "known-gaps", text: "Known Gaps", depth: 2 },
+  { id: "related", text: "Related", depth: 2 },
+]}>
+  <div class="prose-custom">
+    <p>
+      Laurel Proxy negotiates HTTP/2 with clients and with origins, independently, over the
+      same MITM tunnel used for HTTP/1.1. There is no flag and no configuration -- ALPN
+      decides each hop on its own, so an h2 client talking to an HTTP/1.1-only origin (or
+      the reverse) is a normal case, not a special one, and the recording reflects it.
+    </p>
+
+    <h2 id="how-it-works">How It Works</h2>
+    <ul>
+      <li><strong>Client hop.</strong> The MITM TLS socket offers <code>ALPNProtocols: ['h2', 'http/1.1']</code>. Whatever the client picks is what it gets. A client that sends no ALPN extension at all lands on <code>http/1.1</code> -- never guessed as h2.</li>
+      <li><strong>Origin hop.</strong> Negotiated separately via its own ALPN probe, cached per <code>host:port</code> so repeat requests to the same origin don't re-probe.</li>
+    </ul>
+    <p>
+      The two hops are independent by design: nothing about the client's protocol influences
+      what's offered to the origin, or vice versa. The trade-off is a real one: an HTTPS
+      origin costs one extra TLS handshake for ALPN discovery the first time it's seen, cached
+      per <code>host:port</code> after that. It's invisible to clients, but it is a genuine
+      network side effect worth knowing about if you're watching connection counts to an
+      origin.
+    </p>
+
+    <h2 id="what-gets-recorded">What Gets Recorded</h2>
+    <p>
+      Every captured request (and every WebSocket handshake row) carries two fields, separate
+      from <code>protocol</code> (which is the URL scheme, <code>http</code>/<code>https</code>,
+      not a wire protocol):
+    </p>
+    <table>
+      <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>client_protocol</code></td><td>Wire protocol negotiated with the <strong>client</strong>: <code>http/1.1</code> | <code>h2</code> | <code>null</code></td></tr>
+        <tr><td><code>origin_protocol</code></td><td>Wire protocol negotiated with the <strong>origin</strong>: <code>http/1.1</code> | <code>h2</code> | <code>null</code></td></tr>
+      </tbody>
+    </table>
+    <p>
+      <strong><code>null</code> means genuinely unknown -- never read it as <code>http/1.1</code>.</strong>
+      Every exchange the proxy records sets both fields to a real value, so a <code>null</code>
+      is a legacy row from before this feature existed. Databases created before this feature
+      get both columns backfilled to <code>http/1.1</code> on first open after upgrading --
+      before HTTP/2 support existed, every recorded exchange genuinely spoke HTTP/1.1 on both
+      hops, so that's a fact about the row, not a guess.
+    </p>
+
+    <h3 id="finding-the-mixed-hops-case">Finding the Mixed-Hops Case</h3>
+    <p>Before this feature, an h2 exchange and an http/1.1 exchange recorded identically, because <code>protocol</code> is the URL scheme, not the wire protocol. Now the mixed case is queryable directly:</p>
+    <pre><code>laurel-proxy requests --client-protocol h2 --origin-protocol http/1.1 --format agent</code></pre>
+
+    <h2 id="cli">CLI</h2>
+    <p>
+      <code>laurel-proxy requests</code> and <code>laurel-proxy request &lt;id&gt;</code> accept
+      <code>--client-protocol &lt;protocol&gt;</code> and <code>--origin-protocol &lt;protocol&gt;</code>
+      (either or both, exact match, <code>http/1.1</code> or <code>h2</code>). An unrecognised
+      value exits non-zero rather than silently returning everything, and both filters work with
+      <code>--tail</code>.
+    </p>
+    <pre><code># Find h2 exchanges
+laurel-proxy requests --client-protocol h2 --format agent
+
+# The mixed-hops case
+laurel-proxy requests --client-protocol h2 --origin-protocol http/1.1 --format agent</code></pre>
+    <p>
+      <code>--format table</code> tags an h2 client hop with a magenta <code>H2</code> in the
+      method column, the same "only the non-default is worth a badge" approach as the
+      WebSocket <code>WS</code> marker -- the two never co-occur, since a WebSocket's client
+      hop is always HTTP/1.1 by construction. <code>laurel-proxy request &lt;id&gt;</code> (table
+      format) prints separate <code>Client Hop</code> and <code>Origin Hop</code> lines, showing
+      <code>unknown</code> rather than a guess when unset. <code>--format agent</code>/<code>--format json</code>
+      carry <code>client_protocol</code>/<code>origin_protocol</code> on both commands and on
+      <code>--tail</code>.
+    </p>
+
+    <h2 id="rest-api">REST API</h2>
+    <p>
+      <code>GET /api/requests</code> accepts <code>client_protocol</code> and
+      <code>origin_protocol</code> query parameters (either or both), same exact-match
+      semantics as the CLI. An unrecognised value returns <code>400</code>.
+    </p>
+    <pre><code>curl "http://127.0.0.1:8081/api/requests?client_protocol=h2&amp;origin_protocol=http%2F1.1"</code></pre>
+
+    <h2 id="web-ui">Web UI</h2>
+    <p>
+      The traffic list tags an h2 client hop with a small <strong>H2</strong> badge in the
+      method column, next to the request row. The request detail panel's metadata bar shows
+      <code>client hop &rarr; origin hop</code> (e.g. <code>h2 &rarr; http/1.1</code>), reading
+      <strong>unknown</strong> for an unset value rather than guessing.
+    </p>
+
+    <h2 id="websocket-connections">WebSocket Connections</h2>
+    <p>
+      A WebSocket handshake only ever arrives via the <code>Upgrade</code> header, which HTTP/2
+      forbids outright -- so every WebSocket connection Laurel Proxy records has
+      <code>client_protocol: 'http/1.1'</code> and <code>origin_protocol: 'http/1.1'</code>
+      <strong>by construction</strong>, not by default. There is no such thing as an h2
+      WebSocket connection in this proxy's recording, because there is no such connection to
+      record.
+    </p>
+
+    <h2 id="not-supported">Not Supported</h2>
+    <ul>
+      <li><strong>WebSockets over HTTP/2 (RFC 8441 Extended CONNECT).</strong> An h2 client attempting one fails cleanly rather than hanging -- a reset stream, a <code>405</code>, or the client's own request builder refusing to send an <code>Upgrade</code> header in the first place. None of the three is recorded as an exchange.</li>
+      <li><strong>Cleartext h2c</strong> (prior-knowledge or <code>Upgrade</code>-based). Rare in practice -- browsers don't do it -- and out of scope.</li>
+      <li><strong>HTTP/3 / QUIC</strong>, and server push (deprecated, unimplemented in browsers).</li>
+    </ul>
+
+    <h2 id="known-gaps">Known Gaps</h2>
+    <p>
+      <strong>One class of truncated h2 response is genuinely indistinguishable from a clean
+      end:</strong> a <code>RST_STREAM(NO_ERROR)</code> mid-body on a response with no
+      <code>content-length</code>. Every observable property matches a clean end-of-stream, so
+      this one shape can record as complete when it wasn't. Every other truncation shape -- a
+      declared <code>content-length</code> that doesn't match, a non-<code>NO_ERROR</code>
+      reset, a client-side cancel -- is caught and excluded from the recording.
+    </p>
+
+    <h2 id="related">Related</h2>
+    <ul>
+      <li><a href={`${base}docs/cli`}>CLI Reference</a> - <code>--client-protocol</code>/<code>--origin-protocol</code> filters</li>
+      <li><a href={`${base}docs/api`}>REST API</a> - Query parameters for the same filters</li>
+      <li><a href={`${base}docs/web-ui`}>Web UI</a> - The H2 badge and hop metadata in the detail panel</li>
+      <li><a href={`${base}docs/https`}>HTTPS Interception</a> - How the MITM TLS socket is set up</li>
+      <li><a href={`${base}docs/architecture`}>Architecture</a> - Storage and migration for the new fields</li>
+    </ul>
+  </div>
+</DocsLayout>
+
+<style>
+  .prose-custom h2 {
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-custom h3 {
+    color: var(--color-text-primary);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .prose-custom p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+  .prose-custom pre {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+  .prose-custom code:not(pre code) {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .prose-custom ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .prose-custom li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+  .prose-custom em {
+    color: var(--color-accent);
+    font-style: normal;
+  }
+  .prose-custom strong {
+    color: var(--color-text-primary);
+  }
+  .prose-custom table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
+  .prose-custom th {
+    text-align: left;
+    color: var(--color-text-primary);
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid var(--color-border);
+  }
+  .prose-custom td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+  .prose-custom a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-custom a:hover {
+    color: var(--color-text-primary);
+  }
+</style>

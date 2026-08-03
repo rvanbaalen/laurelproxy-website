@@ -98,6 +98,8 @@ DB Size    3.2MB</code></pre>
         <tr><td><code>--status &lt;code&gt;</code></td><td></td><td>Filter by HTTP status code</td></tr>
         <tr><td><code>--method &lt;method&gt;</code></td><td></td><td>Filter by HTTP method</td></tr>
         <tr><td><code>--kind &lt;kind&gt;</code></td><td></td><td>Filter by request kind: <code>http</code> or <code>websocket</code>. An unrecognised kind is an error. Also works with <code>--tail</code></td></tr>
+        <tr><td><code>--client-protocol &lt;protocol&gt;</code></td><td></td><td>Filter by client-hop wire protocol: <code>http/1.1</code> or <code>h2</code>. Exact match, no NULL fallback. An unrecognised value is an error. Also works with <code>--tail</code></td></tr>
+        <tr><td><code>--origin-protocol &lt;protocol&gt;</code></td><td></td><td>Filter by origin-hop wire protocol: <code>http/1.1</code> or <code>h2</code>. Same semantics as <code>--client-protocol</code>, and combinable with it</td></tr>
         <tr><td><code>--search &lt;pattern&gt;</code></td><td></td><td>Search URLs (substring match)</td></tr>
         <tr><td><code>--since &lt;time&gt;</code></td><td></td><td>After this time (Unix ms or ISO date)</td></tr>
         <tr><td><code>--until &lt;time&gt;</code></td><td></td><td>Before this time (Unix ms or ISO date)</td></tr>
@@ -127,6 +129,13 @@ DB Size    3.2MB</code></pre>
       to <code>jq</code> or feeding to scripts. Use <code>--format agent</code> for LLM-optimized output
       that is compact and structured for AI consumption.
     </p>
+    <p>
+      In <code>table</code> format, an h2 client hop is tagged with a magenta <code>H2</code> next to
+      the method, the same "only the non-default is worth a badge" approach as the WebSocket
+      <code>WS</code> marker (the two never co-occur, since a WebSocket's client hop is always
+      HTTP/1.1). Every format also carries <code>client_protocol</code>/<code>origin_protocol</code> --
+      see <a href={`${base}docs/http2`}>HTTP/2 Support</a> for the full field reference.
+    </p>
 
     <h3 id="examples">Examples</h3>
     <pre><code># All 500 errors
@@ -152,6 +161,10 @@ laurel-proxy requests --format agent --failed
 
 # Only WebSocket connections (handshakes appear as ordinary rows, tagged with a WS marker)
 laurel-proxy requests --kind websocket --format agent
+
+# HTTP/2 exchanges, and the mixed-hops case (h2 client, HTTP/1.1 origin)
+laurel-proxy requests --client-protocol h2 --format agent
+laurel-proxy requests --client-protocol h2 --origin-protocol http/1.1 --format agent
 
 # Only failed requests from the last hour
 laurel-proxy requests --failed --last-hour
@@ -206,6 +219,12 @@ laurel-proxy requests --method POST --host api.example.com --tail</code></pre>
     </table>
     <pre><code>laurel-proxy request a1b2c3d4-e5f6-7890-abcd-ef1234567890
 laurel-proxy request a1b2c3d4-e5f6-7890-abcd-ef1234567890 --format table</code></pre>
+    <p>
+      <code>--format table</code> prints separate <code>Client Hop</code> and <code>Origin Hop</code>
+      lines showing the wire protocol negotiated on each side (<code>http/1.1</code> or <code>h2</code>,
+      or <code>unknown</code> for a legacy row predating this feature). <code>--format json</code>
+      carries the same information as <code>client_protocol</code>/<code>origin_protocol</code>.
+    </p>
 
     <!-- messages -->
     <h2 id="messages">messages</h2>
@@ -370,6 +389,7 @@ laurel-proxy proxy-on --port 9000 --service "Wi-Fi"</code></pre>
       <li><a href={`${base}docs/api`}>REST API</a> - Programmatic access to captured traffic</li>
       <li><a href={`${base}docs/configuration`}>Configuration</a> - Config file, storage limits, and auto-cleanup</li>
       <li><a href={`${base}docs/https`}>HTTPS Interception</a> - CA trust setup for trust-ca and uninstall-ca commands</li>
+      <li><a href={`${base}docs/http2`}>HTTP/2 Support</a> - --client-protocol/--origin-protocol filters in full</li>
       <li><a href={`${base}docs/agent-plugin`}>AI Agent Plugin</a> - Uses --format agent for AI-optimized output</li>
     </ul>
   </div>

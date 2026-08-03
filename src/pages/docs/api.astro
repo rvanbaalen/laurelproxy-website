@@ -13,6 +13,8 @@ const requestsResponse = `{
       "id": "...",
       "timestamp": 1700000000000,
       "method": "GET",
+      "client_protocol": "h2",
+      "origin_protocol": "http/1.1",
       ...
     }
   ],
@@ -93,6 +95,8 @@ const websocketReplayExample = `curl -X POST http://127.0.0.1:8081/api/websocket
         <tr><td><code>status</code></td><td>Filter by HTTP status code</td></tr>
         <tr><td><code>method</code></td><td>Filter by HTTP method</td></tr>
         <tr><td><code>content_type</code></td><td>Filter by content type</td></tr>
+        <tr><td><code>client_protocol</code></td><td>Filter by client-hop wire protocol: <code>http/1.1</code> or <code>h2</code>. <code>400</code> on an unrecognised value</td></tr>
+        <tr><td><code>origin_protocol</code></td><td>Filter by origin-hop wire protocol: <code>http/1.1</code> or <code>h2</code>. Same rules, combinable with <code>client_protocol</code></td></tr>
         <tr><td><code>search</code></td><td>Search URLs (substring match)</td></tr>
         <tr><td><code>since</code></td><td>After this time (Unix ms or ISO date)</td></tr>
         <tr><td><code>until</code></td><td>Before this time (Unix ms or ISO date)</td></tr>
@@ -105,7 +109,10 @@ const websocketReplayExample = `curl -X POST http://127.0.0.1:8081/api/websocket
 curl http://127.0.0.1:8081/api/requests
 
 # Filtered
-curl "http://127.0.0.1:8081/api/requests?host=example.com&status=200&limit=50"</code></pre>
+curl "http://127.0.0.1:8081/api/requests?host=example.com&status=200&limit=50"
+
+# The mixed-hops case: h2 client, HTTP/1.1 origin
+curl "http://127.0.0.1:8081/api/requests?client_protocol=h2&origin_protocol=http%2F1.1"</code></pre>
 
     <p>Response:</p>
     <pre><code>{requestsResponse}</code></pre>
@@ -213,6 +220,7 @@ curl "http://127.0.0.1:8081/api/requests?host=example.com&status=200&limit=50"</
       <li><a href={`${base}docs/architecture`}>Architecture</a> - How the API fits into the system</li>
       <li><a href={`${base}docs/web-ui`}>Web UI</a> - Visual interface powered by this API</li>
       <li><a href={`${base}docs/https`}>HTTPS Interception</a> - CA certificate details for the /api/ca.crt endpoint</li>
+      <li><a href={`${base}docs/http2`}>HTTP/2 Support</a> - client_protocol/origin_protocol fields in full</li>
       <li><a href={`${base}docs/agent-plugin`}>AI Agent Plugin</a> - Programmatic access to traffic for AI agents</li>
       <li><a href={`${base}docs/recipes/ios-capture`}>Capture iOS Traffic</a> - Mobile CA certificate installation via /api/ca.crt</li>
     </ul>

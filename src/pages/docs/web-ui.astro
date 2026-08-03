@@ -69,7 +69,7 @@ open http://127.0.0.1:9001</code></pre>
       <thead><tr><th>Column</th><th>Description</th></tr></thead>
       <tbody>
         <tr><td><strong>Time</strong></td><td>Timestamp when the request was received (HH:MM:SS.ms)</td></tr>
-        <tr><td><strong>Method</strong></td><td>HTTP method, color-coded (green for GET, blue for POST, orange for PUT, etc.). A WebSocket connection's <code>101</code> handshake row gets a small <strong>WS</strong> badge next to the method instead</td></tr>
+        <tr><td><strong>Method</strong></td><td>HTTP method, color-coded (green for GET, blue for POST, orange for PUT, etc.). A WebSocket connection's <code>101</code> handshake row gets a small <strong>WS</strong> badge next to the method instead; an h2 client hop gets a small <strong>H2</strong> badge (the two never co-occur, since a WebSocket's client hop is always HTTP/1.1)</td></tr>
         <tr><td><strong>Status</strong></td><td>Response status code, color-coded (green for 2xx, yellow for 3xx, orange for 4xx, red for 5xx)</td></tr>
         <tr><td><strong>Path</strong></td><td>Request URL path</td></tr>
         <tr><td><strong>Host</strong></td><td>Target hostname</td></tr>
@@ -152,7 +152,7 @@ open http://127.0.0.1:9001</code></pre>
     </p>
 
     <h3 id="detail-metadata">Detail metadata</h3>
-    <p>The metadata bar between the title and the tabs shows four pieces of information:</p>
+    <p>The metadata bar between the title and the tabs shows:</p>
     <table>
       <thead><tr><th>Field</th><th>Description</th></tr></thead>
       <tbody>
@@ -160,6 +160,7 @@ open http://127.0.0.1:9001</code></pre>
         <tr><td><strong>Size</strong></td><td>Response body size (e.g., 422B)</td></tr>
         <tr><td><strong>Protocol</strong></td><td>Whether the request used HTTP or HTTPS</td></tr>
         <tr><td><strong>Timestamp</strong></td><td>When the request was made (e.g., 4:47:02 PM)</td></tr>
+        <tr><td><strong>Client hop &rarr; Origin hop</strong></td><td>Wire protocol negotiated with the client and with the origin, shown together (e.g. <code>h2 → http/1.1</code>). Reads <code>unknown</code> for a legacy row predating this field rather than guessing</td></tr>
       </tbody>
     </table>
 
@@ -228,6 +229,7 @@ open http://127.0.0.1:9001</code></pre>
       <li><a href={`${base}docs/getting-started`}>Getting Started</a> - Install and capture your first request</li>
       <li><a href={`${base}docs/api`}>REST API</a> - The API powering the web dashboard</li>
       <li><a href={`${base}docs/https`}>HTTPS Interception</a> - Capture HTTPS traffic in the UI</li>
+      <li><a href={`${base}docs/http2`}>HTTP/2 Support</a> - The H2 badge and client/origin hop fields</li>
       <li><a href={`${base}docs/cli`}>CLI Reference</a> - Command-line alternative for querying traffic</li>
     </ul>
   </div>

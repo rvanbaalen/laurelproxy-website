@@ -29,6 +29,7 @@ export const docsNav: NavGroup[] = [
     group: "Advanced",
     items: [
       { title: "HTTPS Interception", path: "/docs/https/" },
+      { title: "HTTP/2 Support", path: "/docs/http2/" },
       { title: "AI Agent Plugin", path: "/docs/agent-plugin/" },
       { title: "Architecture", path: "/docs/architecture/" },
     ],

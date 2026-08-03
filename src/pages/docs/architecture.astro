@@ -25,6 +25,7 @@ const base = import.meta.env.BASE_URL;
       <li><strong>Uncompressed capture</strong> -- the proxy strips <code>Accept-Encoding</code> from outbound requests, so upstream servers return plaintext and stored bodies are always readable without a decompression step.</li>
       <li><strong>Body truncation</strong> -- configurable max body size prevents storage bloat. A <code>truncated</code> flag is set on affected records so you know when data was clipped.</li>
       <li><strong>Per-domain cert caching</strong> -- an LRU cache avoids regenerating SSL certificates for frequently accessed domains. Default capacity is 500 entries.</li>
+      <li><strong>Independent HTTP/2 negotiation</strong> -- the MITM TLS socket offers ALPN <code>['h2', 'http/1.1']</code> to the client, and the origin is probed separately over its own ALPN handshake, cached per <code>host:port</code>. Nothing about one hop's protocol influences the other. See <a href={`${base}docs/http2`}>HTTP/2 Support</a>.</li>
       <li><strong>Shared-pipe throttling</strong> -- bandwidth throttling models one shared virtual link per direction rather than one per connection, so concurrent requests contend for the same rate budget the way they would on a real network link.</li>
       <li><strong>Decoupled WebSocket recording</strong> -- frame decoding is separate from the relay, so a decoding problem (a malformed frame, an unexpected compression bit) can never break the live connection. The trade-off is that a decode failure silently stops recording for that direction rather than surfacing an error.</li>
     </ul>
@@ -41,6 +42,16 @@ const base = import.meta.env.BASE_URL;
     <p>
       Request and response bodies are stored as binary blobs. In the API and SSE stream,
       they are base64-encoded.
+    </p>
+    <p>
+      Every row also carries <code>client_protocol</code> and <code>origin_protocol</code>
+      (<code>http/1.1</code> | <code>h2</code> | <code>null</code>), recording the wire protocol
+      negotiated on each hop independently of the URL's <code>http</code>/<code>https</code>
+      scheme. Databases created before this field existed get both columns added on first
+      open after upgrading, guarded by a schema check so it's a no-op on every run after the
+      first, and existing rows are backfilled to <code>http/1.1</code> for both hops rather
+      than left <code>null</code> -- every exchange recorded before HTTP/2 support existed
+      genuinely spoke HTTP/1.1 on both sides.
     </p>
 
     <h2 id="file-paths">File Paths</h2>
@@ -108,6 +119,7 @@ const base = import.meta.env.BASE_URL;
       <li><a href={`${base}docs/api`}>REST API</a> - Query captured traffic programmatically</li>
       <li><a href={`${base}docs/configuration`}>Configuration</a> - Config file, storage limits, and auto-cleanup</li>
       <li><a href={`${base}docs/cli`}>CLI Reference</a> - All commands, flags, and output formats</li>
+      <li><a href={`${base}docs/http2`}>HTTP/2 Support</a> - The client_protocol/origin_protocol fields and their migration</li>
     </ul>
   </div>
 </DocsLayout>
