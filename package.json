@@ -10,9 +10,9 @@
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^14.1.7",
-    "@astrojs/react": "^6.0.2",
-    "@astrojs/sitemap": "^3.7.3",
+    "@astrojs/cloudflare": "^14.3.0",
+    "@astrojs/react": "^6.0.5",
+    "@astrojs/sitemap": "^3.7.4",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.6",
     "astro-pagefind": "^2.0.1",
