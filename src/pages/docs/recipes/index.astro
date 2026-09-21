@@ -4,13 +4,13 @@ import DocsLayout from "../../../layouts/DocsLayout.astro";
 const base = import.meta.env.BASE_URL;
 
 const recipes = [
-  { title: "Debug a Failing Webhook", href: `${base}docs/recipes/debug-webhook`, description: "Capture and inspect Stripe/Twilio webhook traffic to find why it fails" },
-  { title: "Find Why My API Returns 422", href: `${base}docs/recipes/debug-422`, description: "Trace a 422 Unprocessable Entity response back to the validation error" },
-  { title: "Debug a CORS Preflight Failure", href: `${base}docs/recipes/debug-cors`, description: "Capture the OPTIONS preflight and inspect the Access-Control-* response headers" },
-  { title: "Find Your Slowest API Endpoints", href: `${base}docs/recipes/find-slow-endpoints`, description: "Filter captured traffic by response duration to spot performance problems" },
-  { title: "Verify a Fix Without Redeploying", href: `${base}docs/recipes/verify-a-fix`, description: "Replay a captured request against your fixed server and diff the response" },
-  { title: "Turn Captured Traffic into a cURL Command", href: `${base}docs/recipes/share-as-curl`, description: "Copy any request from the Web UI as a ready-to-run curl command" },
-  { title: "Capture All Traffic from iOS App", href: `${base}docs/recipes/ios-capture`, description: "Set up your iPhone to route traffic through Laurel Proxy on your Mac" },
+  { title: "Debug a Failing Webhook", href: `${base}docs/recipes/debug-webhook/`, description: "Capture and inspect Stripe/Twilio webhook traffic to find why it fails" },
+  { title: "Find Why My API Returns 422", href: `${base}docs/recipes/debug-422/`, description: "Trace a 422 Unprocessable Entity response back to the validation error" },
+  { title: "Debug a CORS Preflight Failure", href: `${base}docs/recipes/debug-cors/`, description: "Capture the OPTIONS preflight and inspect the Access-Control-* response headers" },
+  { title: "Find Your Slowest API Endpoints", href: `${base}docs/recipes/find-slow-endpoints/`, description: "Filter captured traffic by response duration to spot performance problems" },
+  { title: "Verify a Fix Without Redeploying", href: `${base}docs/recipes/verify-a-fix/`, description: "Replay a captured request against your fixed server and diff the response" },
+  { title: "Turn Captured Traffic into a cURL Command", href: `${base}docs/recipes/share-as-curl/`, description: "Copy any request from the Web UI as a ready-to-run curl command" },
+  { title: "Capture All Traffic from iOS App", href: `${base}docs/recipes/ios-capture/`, description: "Set up your iPhone to route traffic through Laurel Proxy on your Mac" },
 ];
 ---
 
@@ -34,8 +34,8 @@ const recipes = [
     <div class="mt-10">
       <h2 id="related">Related</h2>
       <ul>
-        <li><a href={`${base}docs/getting-started`}>Getting Started</a> - Install and capture your first request</li>
-        <li><a href={`${base}docs/agent-plugin`}>AI Agent Plugin</a> - AI-assisted HTTP debugging in your terminal</li>
+        <li><a href={`${base}docs/getting-started/`}>Getting Started</a> - Install and capture your first request</li>
+        <li><a href={`${base}docs/agent-plugin/`}>AI Agent Plugin</a> - AI-assisted HTTP debugging in your terminal</li>
       </ul>
     </div>
   </div>
